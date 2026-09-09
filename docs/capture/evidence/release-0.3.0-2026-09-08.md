@@ -64,13 +64,32 @@ Physical phone tests remain deferred as requested, including OPPO's known
 recording-stop-after-task-removal behavior. The future iOS scene migration is
 an SDK27 upgrade requirement, not a current Xcode26 release blocker.
 
-Mac live system/meeting-source tests retain their documented limits. A read-only
-routing check found Wave Link monitoring all audio and Chrome into the user's
-normal output. No silent test sink could be proved from a virtual device name.
-No tone, recording, sleep or audio-routing change was executed; the question
-about temporarily muting monitoring remains pending. Existing long Meeting and
-Voice Memo results stay valid, and are not falsely described as System Capture
-or all-source-restart proof.
+Mac live system/meeting-source tests retain their documented limits. The initial
+read-only routing check found Wave Link monitoring all audio and Chrome into
+the user's normal output. A virtual-device name did not establish a silent
+test sink. Existing long Meeting and Voice Memo results stay valid, and are
+not described as System Capture or all-source-restart proof.
+
+### September 9 Mac test attempt and audio recovery
+
+AX subsequently authorized Mac testing and temporary monitoring mute. The
+attempt muted Wave Link's All audio channel, but the short harness exited at
+its microphone/screen-recording permission preflight before recording began.
+The mute was not promptly restored, and AX reported lost sound. This attempt
+is failed preflight evidence, not a capture pass.
+
+At recovery, the complete Wave Link configuration was compared with the private
+pre-test backup: it matched exactly, All audio was unmuted, and no generated
+tone or capture-test process remained. AX confirmed sound returned before
+requesting continued closeout. The permission-only recheck still returned
+screen recording unavailable and microphone authorization not determined for
+the current test process. A permission-capable launch context and a verified
+non-monitored test source are prerequisites to another capture attempt.
+Do not mute the normal output while preparing builds or resolving permissions.
+
+No new long System Capture, real Zoom/Teams/browser exclusion, source/route
+restart or signed-App recovery result is claimed. Sleep/wake remains held by
+the existing no-lock/no-sleep instruction; phone tests remain deferred.
 
 Local receipts, exact binaries, private logs and previous installed App backups
 are under `local-eval/release-20260908/` and are excluded from Git.

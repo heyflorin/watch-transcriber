@@ -17,9 +17,12 @@ health check passes. App-only preferences do not change that automation.
 AX explicitly deferred physical phone tests. The earlier requirement to wait
 for tao0.37 is superseded by the [supported current iOS release decision](evidence/ios-supported-release-path-2026-09-08.md):
 Xcode26 is accepted now; scene migration belongs to a future SDK27 upgrade.
-The remaining live Mac system/source audio tests still need an independently
-safe non-monitored setup or the pending authorization to temporarily mute
-monitoring. They have not been run or quietly labelled passed.
+AX subsequently authorized the Mac tests, including temporary monitoring mute.
+The September 9 short attempt stopped at the permission preflight before
+recording. Wave Link settings now match the pre-test backup and AX confirmed
+sound is restored. Remaining live system/source checks need a process with
+the required macOS permissions and a verified non-monitored source; no new
+live capture pass is claimed. See the release evidence for the recovery record.
 
 ## Acceptance and closeout — AX decision, 2026-09-06
 
@@ -106,10 +109,11 @@ Completed on 2026-09-06:
   App Store iOS IPA/archive are retained with exact hashes and setup notes in
   the linked closeout evidence. Both READMEs describe the final user path.
 
-Remaining work is limited to the readiness table's physical capture/import/
-lifecycle checks and explicitly authorized distribution steps. No test App or
-model worker remains running. Production installation/launch and public upload
-were not performed. The iOS App Store IPA is not directly sideloadable.
+The September 8 release subsequently completed Mac installation, public Mac
+and Android downloads, and internal TestFlight distribution. Production App
+launch was not part of that installation proof. Remaining work is limited to
+the readiness table's capture/import/lifecycle checks; physical phone tests
+are deferred by AX. The iOS App Store IPA is not directly sideloadable.
 
 Reuse these passing checks while the relevant code is unchanged. Missing
 hardware or prohibited OPPO lock/task-removal holds the affected claim; it does
@@ -244,8 +248,9 @@ and is not the processing layer.
     passes uninterrupted 30-minute and two-hour Meeting runs at 0 ms and 2 ms
     end drift. Those runs exposed and fixed no-callback stalls, nominal-frame
     clock drift, and real-time-thread hashing on discontinuity. Real Zoom/Teams,
-    browser, route, sleep, and the separate two-hour Voice Memo/System Capture
-    proofs remain. See
+    browser, route, sleep, and separate two-hour System Capture proofs remain;
+    the two-hour physical Voice Memo run also passed. Sleep/wake testing is
+    held by AX's no-lock/no-sleep instruction. See
     `evidence/macos-physical-long-capture-2026-09-04.md`.
 15. Preserve the existing pinned `whisper-rs` / `whisper.cpp` Metal worker as
     the selectable Apple-Silicon fallback. No new Candle, MLX, Core ML speed
@@ -318,11 +323,11 @@ quality work; repair only a concrete affected behavior.
 | Area | Retained evidence | Remaining closeout |
 |---|---|---|
 | Shared ingest/providers/archive | Rust ledger, import, dedup, recovery and bounded self-cleaning live provider runs exist | Verify the final App uses this path, run affected checks and fix regressions |
-| Full local | Final model-choice UI, durable explicit preference, actual isolated-App Mandarin/Mixed import→result/export/reopen, current signed Mac artifact and practical quality evidence pass | Production-installation claim remains separate; no further model research is scheduled |
+| Full local | Final model-choice UI, durable explicit preference, actual isolated-App Mandarin/Mixed import→result/export/reopen, practical quality evidence, and signed Mac 0.3.0 installation pass | Installed production-App launch is distinct from retained isolated-App proof; no further model research is scheduled |
 | macOS capture | Physical Voice Memo and long Meeting core have passing evidence | Authorized real-app/browser exclusion, route/source-restart and signed-App recovery checks; System Capture long run only with a proven non-monitored source |
 | iOS | App/Share signing, physical install/cold launch and staged-import evidence exist | Real Files/Voice Memos Share Sheet and required physical lifecycle checks; supported release-toolchain cold launch |
 | Android | Emulator recovery/import/export checks and bounded OPPO physical checks exist | Remaining real picker/share/export and supported lifecycle proof; do not repeat OPPO task-removal/lock under current authority |
-| Distribution/docs | Current signed/notarized Mac DMG, signed Android APK, App/Share-signed iOS IPA/archive, exact hashes and bilingual setup/readiness docs are retained | Physical-platform acceptance and explicitly authorized public/TestFlight/store distribution remain open |
+| Distribution/docs | Signed/notarized Mac 0.3.0 installed; verified Mac/Android downloads published; iOS 0.3.0(3) available in existing internal TestFlight groups; exact hashes and bilingual docs retained | Remaining physical-platform acceptance is separate from completed distribution; phone tests are deferred by AX |
 
 Physical evidence is not replaced by a UI mock, emulator, compilation or
 CoreDevice injection. AX's quality clarification does not waive capture safety

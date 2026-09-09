@@ -4,10 +4,13 @@ Execution status: **v0.3.0 engineering and distribution delivered**.
 AX's September8 instruction authorized commit/push, versioned release and
 TestFlight, excluding physical phone tests. Those release actions are complete:
 read `docs/capture/evidence/release-0.3.0-2026-09-08.md` first when resuming.
-The only remaining non-phone live acceptance work requires a proven silent Mac
-audio route or the pending temporary-mute authorization. No production change,
-model study or artifact rebuild is needed merely to resume. Keep the earlier
-no-audible-tone/no-lock restrictions and do not call that live check passed.
+The remaining non-phone live acceptance work requires a proven silent Mac
+audio route and a process with microphone/system-recording permissions.
+AX authorized Mac testing and temporary monitoring mute; the September 9
+attempt stopped at permission preflight before recording. Audio settings were
+restored to the pre-test backup and AX confirmed sound returned. No new live
+capture pass is claimed. No production change, model study or artifact rebuild
+is needed merely to resume. Keep the earlier no-audible-tone/no-lock restrictions.
 
 ## Intent and acceptance
 
@@ -94,8 +97,11 @@ and `local-eval/closeout-20260906/` receipts preserve the detailed evidence.
 
 Do not redo completed UI/model/package work merely to resume. Only the plan's
 named physical capture/import/lifecycle and authorized distribution scope
-remains. No production App installation/launch or public/TestFlight/store upload
-was performed; isolated QA is not that proof. The iOS App Store IPA is not a
+remains. At that historical closeout, production App installation/launch and
+public/TestFlight/store upload had not been performed; isolated QA was not
+that proof. The September 8 release subsequently completed Mac installation,
+public Mac/Android downloads and internal TestFlight distribution, as recorded
+above; production App launch remains a separate claim. The iOS App Store IPA is not a
 directly sideloadable development IPA. No physical Pixel is available, and
 OPPO lock/task-removal remains prohibited. Report these precise held claims;
 do not label all Release1 platforms complete or restart quality research.

@@ -127,7 +127,27 @@
     "personal_audio_test_performed": false
   },
   "deferred_phone_tests": true,
-  "mac_live_audio_permission_pending": true,
+  "mac_live_audio_permission_pending": false,
   "installed_mac_version": "0.3.0",
-  "production_app_launched": false
+  "production_app_launched": false,
+  "mac_live_audio_followup": {
+    "date": "2026-09-09",
+    "user_authorized_mac_testing": true,
+    "temporary_monitoring_mute_authorized": true,
+    "short_attempt": "permission_preflight_failed_before_recording",
+    "new_live_capture_pass": false,
+    "wave_link_configuration_matches_pre_test_backup": true,
+    "all_audio_muted_after_recovery": false,
+    "test_processes_remaining_after_recovery": false,
+    "user_confirmed_sound_restored": true,
+    "current_test_process_permissions": {
+      "screen_recording": false,
+      "microphone": "not_determined"
+    },
+    "remaining_prerequisites": [
+      "permission-capable launch context",
+      "verified non-monitored test source"
+    ],
+    "sleep_wake_test_held": "existing no-lock/no-sleep instruction"
+  }
 }
