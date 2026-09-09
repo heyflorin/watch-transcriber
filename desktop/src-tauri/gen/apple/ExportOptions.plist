@@ -14,6 +14,8 @@
     <dict>
         <key>ai.ax.watch-transcriber</key>
         <string>EchoWall App Store</string>
+        <key>ai.ax.watch-transcriber.share</key>
+        <string>EchoWall Share App Store</string>
     </dict>
 </dict>
 </plist>

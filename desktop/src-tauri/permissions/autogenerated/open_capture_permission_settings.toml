@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-open-capture-permission-settings"
+description = "Enables the open_capture_permission_settings command without any pre-configured scope."
+commands.allow = ["open_capture_permission_settings"]
+
+[[permission]]
+identifier = "deny-open-capture-permission-settings"
+description = "Denies the open_capture_permission_settings command without any pre-configured scope."
+commands.deny = ["open_capture_permission_settings"]

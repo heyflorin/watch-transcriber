@@ -17,23 +17,67 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-from . import archive_root, parse_note_dt, recording_stem
+from . import (
+    archive_note_dt,
+    archive_root,
+    assert_archive_destination_owner,
+    prior_owned_artifact,
+    recording_stem,
+)
+
+
+def destination_path(note: dict) -> Path:
+    dt = archive_note_dt(note)
+    return archive_root() / dt.strftime("%Y-%m-%d") / f"{recording_stem(note)}.md"
+
+
+def verify_destination(note: dict) -> dict[str, object]:
+    """Read back the canonical note instead of trusting ``deliver()``."""
+
+    root = archive_root()
+    path = destination_path(note)
+    try:
+        resolved = path.resolve(strict=True)
+        resolved.relative_to(root)
+        actual = resolved.read_text(encoding="utf-8")
+    except (OSError, UnicodeError, ValueError):
+        raise OSError("archived note could not be verified") from None
+    if actual != note["markdown"]:
+        raise OSError("archived note failed content verification")
+    return {
+        "backend": "local_archive",
+        "locator": resolved.relative_to(root).as_posix(),
+        "size_bytes": resolved.stat().st_size,
+    }
 
 
 def deliver(note: dict) -> bool:
-    dt = parse_note_dt(note)
+    dt = archive_note_dt(note)
     date_dir = archive_root() / dt.strftime("%Y-%m-%d")
     date_dir.mkdir(parents=True, exist_ok=True)
 
-    recording_path = date_dir / f"{recording_stem(note)}.md"
-    # AI titles can differ between reprocess runs; the HHMMSS prefix is the
-    # deterministic key. Drop stale outputs for the same recording so the
-    # daily.md rollup doesn't accumulate duplicates.
-    for old in date_dir.glob(f"{dt.strftime('%H%M%S')}-*.md"):
-        if old != recording_path:
-            old.unlink()
-    recording_path.write_text(note["markdown"], encoding="utf-8")
-    print(f"[delivery:local_archive] wrote {recording_path}")
+    recording_path = destination_path(note)
+    owner = assert_archive_destination_owner(note, recording_path, "note")
+    if (
+        recording_path.exists()
+        and note.get("recording_id") is not None
+        and owner is None
+        and recording_path.read_text(encoding="utf-8") != note["markdown"]
+    ):
+        raise OSError("unowned archive note does not match this recording")
+    prior = prior_owned_artifact(note, "note")
+    tmp = recording_path.with_suffix(".md.tmp")
+    tmp.write_text(note["markdown"], encoding="utf-8")
+    os.replace(tmp, recording_path)
+    if prior is not None and prior != recording_path:
+        prior.unlink(missing_ok=True)
+    elif note.get("recording_id") is None:
+        # Legacy Voice Memos have no durable recording identity. Preserve their
+        # historical title-change cleanup, which assumes one source per second.
+        for old in date_dir.glob(f"{dt.strftime('%H%M%S')}-*.md"):
+            if old != recording_path:
+                old.unlink()
+    print("[delivery:local_archive] wrote recording note")
 
     daily_md_path = date_dir / "daily.md"
     daily_md = _build_daily_md(date_dir, dt)

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-qwen-candidate-model-pack-status"
+description = "Enables the qwen_candidate_model_pack_status command without any pre-configured scope."
+commands.allow = ["qwen_candidate_model_pack_status"]
+
+[[permission]]
+identifier = "deny-qwen-candidate-model-pack-status"
+description = "Denies the qwen_candidate_model_pack_status command without any pre-configured scope."
+commands.deny = ["qwen_candidate_model_pack_status"]

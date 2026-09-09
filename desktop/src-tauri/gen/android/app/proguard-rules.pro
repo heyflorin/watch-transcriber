@@ -24,3 +24,8 @@
 # stripping this class breaks token storage in release builds.
 -keep class io.crates.keyring.Keyring { *; }
 -keep class io.crates.keyring.Keyring$Companion { *; }
+
+# RecorderPlugin commands and activity callbacks are discovered by annotation
+# reflection after MainActivity registers the generated-source native bridge.
+-keep @app.tauri.annotation.TauriPlugin class ai.ax.watch_transcriber.capture.RecorderPlugin { *; }
+-keepattributes RuntimeVisibleAnnotations

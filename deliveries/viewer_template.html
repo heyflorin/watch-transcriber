@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:,">
 <title>回音壁 EchoWall</title>
 <style>
   :root {
@@ -31,6 +32,7 @@
     --amber: #2f7fd6; --amber-deep: #559ce3; --glow: rgba(47,127,214,.12);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html, body { height: 100%; }
   body {
     background: var(--bg); color: var(--ink); font-family: var(--sans);
@@ -210,6 +212,167 @@
   #syncPill[hidden] { display: none; }
   #syncPill.busy { color: var(--amber); border-color: var(--amber-deep); }
   #syncPill.err { color: #e07070; border-color: #e0707055; }
+  .capture-tools { border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+                   background: color-mix(in srgb, var(--panel) 76%, transparent); }
+  .capture-head { display: flex; flex-direction: column; align-items: stretch; gap: 6px;
+                  padding: 10px; border-bottom: 1px solid var(--line); }
+  .capture-state { font-size: 11px; line-height: 1.5; color: var(--dim);
+                   overflow-wrap: anywhere; }
+  .capture-links { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+  .capture-links:not(:has(button:not([hidden]))) { display: none; }
+  .capture-connect { font-size: 11px; line-height: 1.6; color: var(--amber);
+                     white-space: nowrap; flex-shrink: 0; }
+  .capture-connect:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .capture-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); }
+  .capture-action { min-height: 42px; padding: 8px 9px; background: var(--panel);
+                    display: flex; align-items: center; justify-content: center; gap: 7px;
+                    color: var(--dim); font-size: 12px; }
+  .capture-action:hover { background: var(--panel-2); color: var(--ink); }
+  .capture-action:disabled { cursor: not-allowed; color: var(--faint); opacity: .62; }
+  .capture-action .signal { width: 8px; height: 8px; border-radius: 50%;
+                            background: #e05f57; box-shadow: 0 0 0 3px rgba(224,95,87,.12); }
+  .capture-action .in-arrow { font-family: var(--mono); color: var(--amber); font-size: 14px; }
+  .import-queue { max-height: 320px; overflow-y: auto; }
+  .import-item { padding: 7px 10px; border-top: 1px solid var(--line);
+                 display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; }
+  .import-item:first-child { border-top: none; }
+  .import-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+                 font-size: 11px; color: var(--ink); }
+  .import-status { font-family: var(--mono); font-size: 9.5px; color: var(--amber); }
+  .import-detail { grid-column: 1 / -1; font-size: 10px; color: var(--faint); line-height: 1.35; }
+  .import-review { grid-column: 1 / -1; display: grid;
+                   grid-template-columns: minmax(0, 1fr);
+                   gap: 6px; margin: 5px 0 4px; }
+  .import-review label { display: grid; gap: 3px; font-family: var(--mono);
+                         font-size: 8.5px; color: var(--faint); }
+  .import-review input { min-width: 0; border: 1px solid var(--line); border-radius: 6px;
+                         background: var(--bg); color: var(--ink); padding: 5px 6px;
+                         font: 10px var(--sans); }
+  .import-item.err .import-status, .import-item.err .import-detail { color: #e07070; }
+  .import-start { grid-column: 1 / -1; justify-self: start; color: var(--amber);
+                  font-size: 10.5px; border-bottom: 1px solid var(--amber-deep); }
+  .processing-row-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; }
+  .processing-row-actions .import-start { grid-column: auto; white-space: nowrap; }
+  .drop-mask { position: fixed; inset: 12px; z-index: 80; display: grid; place-items: center;
+               border: 1px solid var(--amber); border-radius: 18px;
+               background: color-mix(in srgb, var(--bg) 91%, var(--amber));
+               box-shadow: inset 0 0 0 5px var(--glow); pointer-events: none; }
+  .drop-mask div { font-family: var(--mono); color: var(--amber); letter-spacing: .08em;
+                   padding: 16px 22px; border: 1px solid var(--amber-deep); border-radius: 999px; }
+  .processing-dialog { width: min(620px, calc(100vw - 32px)); max-height: calc(100vh - 28px);
+                   margin: auto; border: 1px solid var(--line);
+                   border-radius: 16px; padding: 0; background: var(--panel); color: var(--ink);
+                   box-shadow: 0 24px 80px rgba(0,0,0,.45); }
+  .processing-dialog::backdrop { background: rgba(0,0,0,.58); backdrop-filter: blur(3px); }
+  .processing-form { padding: 22px; max-height: calc(100vh - 30px); overflow-y: auto; }
+  .processing-form h2 { font-size: 17px; margin-bottom: 6px; }
+  .processing-form > p { color: var(--dim); font-size: 12px; margin-bottom: 16px; }
+  .processing-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .processing-fields label { display: grid; gap: 4px; color: var(--dim); font-size: 10px; }
+  .processing-form input { width: 100%; background: var(--bg); border: 1px solid var(--line);
+                       border-radius: 9px; color: var(--ink); font: 12px var(--mono); padding: 10px 12px; }
+  .processing-form input:focus { outline: none; border-color: var(--amber-deep); }
+  .processing-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+  .processing-actions button { border: 1px solid var(--line); border-radius: 8px; padding: 7px 13px; }
+  .processing-actions .primary { background: var(--amber); border-color: var(--amber); color: #fff; }
+  .processing-actions .danger { color: #e07070; border-color: color-mix(in srgb, #e07070 55%, var(--line)); margin-right: auto; }
+  .processing-error { min-height: 18px; color: #e07070; font-size: 11px; margin-top: 8px; }
+  .local-pack { margin: 0 0 18px; padding: 14px; border: 1px solid var(--amber-deep);
+                border-radius: 12px; background: color-mix(in srgb, var(--amber) 6%, var(--bg)); }
+  .local-pack-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .local-pack-head b { font-size: 13px; }
+  .local-pack-head span { color: var(--amber); font: 10px var(--mono); }
+  .local-pack p { margin-top: 7px; color: var(--dim); font-size: 11px; line-height: 1.55; }
+  .local-pack-default { display: flex; align-items: flex-start; gap: 9px; margin-top: 10px;
+                        color: var(--ink); font-size: 11px; line-height: 1.45; }
+  .local-pack-default input { margin-top: 2px; accent-color: var(--amber); }
+  .local-pack-default small { display: block; color: var(--faint); font-size: 10px; }
+  .local-pack progress { width: 100%; height: 5px; margin-top: 10px; accent-color: var(--amber); }
+  .local-pack-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .local-pack-actions button { border: 1px solid var(--line); border-radius: 8px;
+                               padding: 7px 11px; font-size: 11px; white-space: nowrap; }
+  .local-pack-default input[type="checkbox"], .local-pack-default input[type="radio"] {
+    width: 14px; height: 14px; min-width: 14px; flex: 0 0 14px; padding: 0; }
+  .local-pack-default > span { flex: 1; min-width: 0; }
+  .moss-components { list-style: none; margin-top: 8px; font-size: 11px; color: var(--dim); }
+  .moss-components li { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
+  .moss-components li span:last-child { flex: none; }
+  .local-pack-actions .primary { background: var(--amber); border-color: var(--amber); color: #fff; }
+  .processing-section-title { margin: 2px 0 9px; color: var(--faint); font: 10px var(--mono);
+                              letter-spacing: .08em; text-transform: uppercase; }
+  @media (max-width: 620px) { .processing-fields { grid-template-columns: 1fr; } }
+  .capture-dialog { width: min(620px, calc(100vw - 32px)); margin: auto; border: 1px solid var(--line);
+                    border-radius: 16px; padding: 0; background: var(--panel); color: var(--ink);
+                    box-shadow: 0 24px 80px rgba(0,0,0,.45); }
+  .capture-dialog::backdrop { background: rgba(0,0,0,.58); backdrop-filter: blur(3px); }
+  .capture-form { padding: 22px; }
+  .capture-form h2 { font-size: 18px; margin-bottom: 4px; }
+  .capture-form > p { color: var(--dim); font-size: 12px; margin-bottom: 16px; }
+  .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .mode-option { min-height: 76px; border: 1px solid var(--line); border-radius: 11px;
+                 padding: 10px; text-align: left; background: var(--bg); }
+  .mode-option b { display: block; font-size: 13px; }
+  .mode-option span { display: block; color: var(--faint); font-size: 10.5px; margin-top: 3px; }
+  .mode-option.on { border-color: var(--amber); box-shadow: inset 0 0 0 1px var(--amber-deep); }
+  .mode-option:disabled { opacity: .42; cursor: not-allowed; }
+  .capture-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .capture-field { display: grid; gap: 5px; color: var(--dim); font-size: 11px; }
+  .capture-field select { width: 100%; background: var(--bg); border: 1px solid var(--line);
+                          border-radius: 9px; color: var(--ink); padding: 8px 10px; }
+  .capture-source-preview { grid-column: 1 / -1; min-height: 48px; display: grid;
+                            grid-template-columns: 34px minmax(0, 1fr); gap: 10px;
+                            align-items: center; border: 1px solid var(--line); border-radius: 10px;
+                            background: var(--bg); padding: 7px 9px; }
+  .capture-source-preview[hidden] { display: none; }
+  .capture-source-icon, .capture-source-fallback { width: 32px; height: 32px;
+                                                   border-radius: 7px; }
+  .capture-source-icon { display: block; object-fit: contain; }
+  .capture-source-fallback { display: grid; place-items: center; background: var(--panel-2);
+                             border: 1px solid var(--line); color: var(--amber);
+                             font: 600 13px var(--mono); }
+  .capture-source-identity { min-width: 0; }
+  .capture-source-identity b { display: block; overflow: hidden; text-overflow: ellipsis;
+                               white-space: nowrap; color: var(--ink); font-size: 12px; }
+  .capture-source-identity span { display: block; margin-top: 2px; color: var(--faint);
+                                  font: 9.5px/1.35 var(--mono); }
+  .scope-confirm { display: flex; gap: 8px; align-items: flex-start; color: var(--dim);
+                   font-size: 11.5px; margin-top: 14px; }
+  .scope-confirm input { margin-top: 3px; accent-color: var(--amber); }
+  .capture-dialog-error { min-height: 20px; color: #e07070; font-size: 11px; margin-top: 10px; }
+  .capture-permission-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .capture-permission-actions button { border: 1px solid var(--amber-deep); border-radius: 8px;
+                                       color: var(--amber); padding: 7px 11px; font-size: 11px; }
+  .capture-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+  .capture-dialog-actions button { border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; }
+  .capture-dialog-actions .primary { background: var(--amber); border-color: var(--amber); color: #fff; }
+  .capture-dialog-actions button:disabled { opacity: .42; cursor: not-allowed; }
+  .recording-sheet { position: fixed; inset: 0; z-index: 90; background: var(--bg);
+                     display: grid; place-items: center; padding: 24px; }
+  .recording-card { width: min(520px, 100%); text-align: center; }
+  .recording-live { display: inline-flex; align-items: center; gap: 8px; color: #e07070;
+                    font: 11px var(--mono); letter-spacing: .16em; }
+  .recording-live::before { content: ""; width: 9px; height: 9px; border-radius: 50%;
+                            background: #e05f57; box-shadow: 0 0 0 5px rgba(224,95,87,.12); }
+  .recording-time { font: 600 clamp(52px, 12vw, 86px)/1 var(--mono);
+                    letter-spacing: -.07em; margin: 28px 0 20px; }
+  .recording-source { color: var(--dim); font-size: 13px; }
+  .recording-source b { display: block; color: var(--ink); font-size: 16px; margin-bottom: 3px; }
+  .recording-meters { display: grid; gap: 8px; width: min(420px, 100%); margin: 22px auto 0; }
+  .recording-meter-row { display: grid; grid-template-columns: 58px 1fr 58px;
+                         gap: 10px; align-items: center; font: 10px var(--mono);
+                         color: var(--faint); text-align: left; }
+  .recording-meter-row output { text-align: right; color: var(--dim); font-variant-numeric: tabular-nums; }
+  .recording-meter { height: 5px; overflow: hidden; border-radius: 999px;
+                     background: var(--panel-2); box-shadow: inset 0 0 0 1px var(--line); }
+  .recording-meter i { display: block; width: 100%; height: 100%; border-radius: inherit;
+                       background: var(--amber); transform: scaleX(0); transform-origin: left center; }
+  .recording-meter-row.system .recording-meter i { background: #e08fb7; }
+  .recording-warning { min-height: 22px; margin: 20px 0; color: #e07070; font-size: 12px; }
+  .recording-controls { display: flex; justify-content: center; gap: 12px; }
+  .recording-controls button { min-width: 112px; min-height: 46px; border-radius: 999px;
+                               border: 1px solid var(--line); background: var(--panel); }
+  .recording-controls button:disabled { opacity: .42; cursor: not-allowed; }
+  .recording-controls .stop { border-color: #e05f57; color: #e07070; }
   .pin-btn { min-width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 50%;
              color: var(--dim); font-size: 13px; display: grid; place-items: center; }
   .pin-btn.on { color: var(--amber); border-color: var(--amber-deep); }
@@ -259,6 +422,8 @@
            border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; }
     .cat.on { border-color: var(--amber-deep); background: var(--glow); color: var(--amber); }
     .side-sec { display: none; }
+    .capture-tools { border-radius: 11px; }
+    .capture-action { min-height: 44px; }
     .stats { display: none; }
     .list { flex: 1; border-right: none;
             padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
@@ -285,6 +450,7 @@
   }
   @media (prefers-reduced-motion: no-preference) {
     .row, .cat, .dial i, .play-btn { transition: background .12s ease, color .12s ease, box-shadow .12s ease; }
+    .recording-meter i { transition: transform .1s linear; }
   }
   @media (prefers-reduced-motion: reduce) {
     .detail { transition: none; }
@@ -300,6 +466,25 @@
       <button id="themeBtn" class="theme-btn" aria-label="切换深浅色模式">◐</button>
     </div>
     <div id="syncPill" hidden role="status"></div>
+    <section id="captureTools" class="capture-tools" aria-label="添加录音" hidden>
+      <div class="capture-head">
+        <span id="captureState" class="capture-state" role="status">本地就绪</span>
+        <div class="capture-links">
+          <button id="localModelBtn" class="capture-connect" type="button" hidden>本地模型</button>
+          <button id="mossModelBtn" class="capture-connect" type="button" hidden>MOSS 本地</button>
+          <button id="processingSetupBtn" class="capture-connect" type="button" hidden>配置处理</button>
+        </div>
+      </div>
+      <div class="capture-actions">
+        <button id="recordBtn" class="capture-action" type="button" disabled title="录音功能尚未安装">
+          <span class="signal" aria-hidden="true"></span><span>录音</span>
+        </button>
+        <button id="importBtn" class="capture-action" type="button">
+          <span class="in-arrow" aria-hidden="true">↘</span><span>导入</span>
+        </button>
+      </div>
+      <div id="importQueue" class="import-queue" role="status" aria-live="polite"></div>
+    </section>
     <div class="search"><input id="q" type="search" placeholder="搜索标题或转写 (/)" aria-label="搜索"></div>
     <div class="cats" id="cats" role="listbox" aria-label="分类"></div>
     <div class="stats" id="stats"></div>
@@ -313,6 +498,133 @@
   <div class="mtw"><div class="mt" id="miniTitle"></div><div class="mp" id="miniTime"></div></div>
   <div class="mbar"><b id="miniFill"></b></div>
 </div>
+<div id="dropMask" class="drop-mask" hidden><div>松开以导入录音</div></div>
+<dialog id="processingDialog" class="processing-dialog">
+  <form id="processingForm" class="processing-form" method="dialog">
+    <h2>配置 App 内处理</h2>
+    <section class="local-pack" aria-label="新录音处理偏好">
+      <b>新录音的默认处理方式</b>
+      <p id="processingPreferenceState" role="status" aria-live="polite">正在读取处理偏好</p>
+      <label class="local-pack-default"><input id="remoteProcessingDefault" type="radio" name="newRecordingRoute" value="remote"><span>新录音默认使用云端处理<small>使用你明确配置的云端服务。下方也可选择 MOSS 或 Whisper 本地处理；尚未选择时，录音留在本机等待操作。</small></span></label>
+      <div class="local-pack-actions">
+        <button id="processingPreferenceRetry" type="button" hidden>重新读取处理偏好</button>
+        <button id="processingPreferenceSaveWhisper" type="button" hidden>保存已有 Whisper 偏好</button>
+      </div>
+    </section>
+    <p>填入你自己的 TOS、妙记、Gemini、GitHub 与 R2 凭据。提交后只写入系统安全存储；页面不会读取或回显这些值。</p>
+    <p>保留策略：canonical 混音长期保存在你的私有 R2；独立 mic/system 源轨在成功发布后本机保留 30 天，再由 App 启动清理。直接导入的原文件副本不会按此策略删除。</p>
+    <section id="localPack" class="local-pack" hidden>
+      <div class="local-pack-head"><b>完整本地模型</b><span id="localPackState">检查中</span></div>
+      <p id="localPackDescription">一次明确、可续传的下载后，Whisper 转写、Core ML speaker diarization、Qwen3.8-27B 双语摘要和本机档案均可完全离线运行；质量档需要至少 32GiB unified memory，diarization 默认开启，音频与逐字稿不会发送到模型服务。</p>
+      <p id="localPackLicense"></p>
+      <label class="local-pack-default"><input id="localPackDefault" type="radio" name="newRecordingRoute" value="whisper_local"><span>新录音默认使用 Whisper 离线处理<small>只影响此后完成的录音；模型不可用时留在本机，等待你选择处理方式。</small></span></label>
+      <progress id="localPackProgress" value="0" max="1" hidden></progress>
+      <div class="local-pack-actions">
+        <button id="localPackInstall" class="primary" type="button">安装完整模型包</button>
+        <button id="localPackCancel" type="button" hidden>取消下载</button>
+        <button id="localPackRemove" type="button" hidden>移除模型</button>
+      </div>
+      <section id="qwenCandidatePack" class="local-pack" hidden>
+        <div class="local-pack-head"><b>Qwen3-ASR 候选转写包</b><span id="qwenCandidateState">检查中</span></div>
+        <p>单独、可续传的约 6.09GiB 开发候选包：Qwen3-ASR-1.7B + ForcedAligner-0.6B。不会替换 Whisper 默认，也不会自动下载；只有完整质量矩阵通过后才可能进入默认路线。</p>
+        <p id="qwenCandidateLicense"></p>
+        <progress id="qwenCandidateProgress" value="0" max="1" hidden></progress>
+        <div class="local-pack-actions">
+          <button id="qwenCandidateInstall" class="primary" type="button">安装 Qwen 候选包</button>
+          <button id="qwenCandidateCancel" type="button" hidden>取消 Qwen 下载</button>
+          <button id="qwenCandidateRemove" type="button" hidden>移除 Qwen 候选包</button>
+        </div>
+      </section>
+    </section>
+    <section id="mossCandidatePack" class="local-pack" hidden aria-labelledby="mossCandidateTitle">
+      <div class="local-pack-head"><b id="mossCandidateTitle">MOSS 本地处理</b><span id="mossCandidateState" role="status" aria-live="polite">检查中</span></div>
+      <p>MOSS 转写、匿名说话人和本地摘要，完成后写入本机档案。点击安装后才会下载模型；处理不调用云端模型，也不需要下方的云端凭据。</p>
+      <p>可处理英文、中文和中英混合录音。已有云端任务保持原选择；本地失败时保留录音和恢复入口。</p>
+      <ul id="mossCandidateComponents" class="moss-components" aria-label="MOSS 模型依赖"></ul>
+      <p id="mossCandidateLicense"></p>
+      <label class="local-pack-default"><input id="mossPackDefault" type="radio" name="newRecordingRoute" value="moss_local"><span>新录音默认使用 MOSS 本地处理<small>只影响此后完成的录音。模型不可用时保留录音和恢复入口，不自动下载，也不改用云端处理；已有任务保持原来的选择。</small></span></label>
+      <progress id="mossCandidateProgress" value="0" max="1" aria-label="MOSS 模型下载进度" hidden></progress>
+      <div class="local-pack-actions">
+        <button id="mossCandidateInstall" class="primary" type="button">安装 MOSS 模型包</button>
+        <button id="mossCandidateCancel" type="button" hidden>取消下载</button>
+        <button id="mossCandidateRemove" type="button" hidden>移除 MOSS</button>
+        <button id="mossCandidateRefresh" type="button" hidden>重新检查</button>
+      </div>
+      <label id="mossRemoveSharedLabel" class="local-pack-default" hidden><input id="mossRemoveShared" type="checkbox"><span>同时移除共享模型<small>额外删除 SpeakerKit 和 Qwen 摘要模型，会影响其他本地路线。默认仅移除 MOSS，录音与档案不受影响。</small></span></label>
+    </section>
+    <div class="processing-section-title">联网摘要与归档</div>
+    <div class="processing-fields">
+      <label>TOS Access Key<input id="processingTosAk" type="password" autocomplete="off" spellcheck="false"></label>
+      <label>TOS Secret Key<input id="processingTosSk" type="password" autocomplete="off" spellcheck="false"></label>
+      <label>TOS Bucket<input id="processingTosBucket" type="text" autocomplete="off" spellcheck="false"></label>
+      <label>TOS Region<input id="processingTosRegion" type="text" autocomplete="off" spellcheck="false" value="cn-hongkong"></label>
+      <label>TOS Endpoint<input id="processingTosEndpoint" type="text" autocomplete="off" spellcheck="false" value="tos-cn-hongkong.volces.com"></label>
+      <label>妙记 API Key<input id="processingVolcKey" type="password" autocomplete="off" spellcheck="false"></label>
+      <label>Gemini API Key<input id="processingGeminiKey" type="password" autocomplete="off" spellcheck="false"></label>
+      <label>Gemini Model<input id="processingGeminiModel" type="text" autocomplete="off" spellcheck="false" value="gemini-3.6-flash"></label>
+      <label>GitHub Archive PAT<input id="processingGithubPat" type="password" autocomplete="off" spellcheck="false"></label>
+      <label>GitHub Archive Repo<input id="processingGithubRepo" type="text" autocomplete="off" spellcheck="false" placeholder="owner/private-notes"></label>
+      <label>R2 Account ID<input id="processingR2Account" type="password" autocomplete="off" spellcheck="false"></label>
+      <label>R2 Access Key ID<input id="processingR2Ak" type="password" autocomplete="off" spellcheck="false"></label>
+      <label>R2 Secret Access Key<input id="processingR2Sk" type="password" autocomplete="off" spellcheck="false"></label>
+      <label>R2 Archive Bucket<input id="processingR2Bucket" type="text" autocomplete="off" spellcheck="false" placeholder="private-audio"></label>
+    </div>
+    <div id="processingError" class="processing-error" role="alert"></div>
+    <div class="processing-actions"><button class="danger" type="button" id="processingDelete" hidden>删除本机凭据</button><button value="cancel" type="button" id="processingCancel">取消</button><button class="primary" type="submit">保存到系统安全存储</button></div>
+  </form>
+</dialog>
+<dialog id="captureDialog" class="capture-dialog">
+  <form id="captureForm" class="capture-form" method="dialog">
+    <h2>开始录音</h2>
+    <p>先确认麦克风和要捕获的声音范围。EchoWall 不会自动开始。</p>
+    <div id="captureModes" class="mode-grid">
+      <button class="mode-option on" type="button" data-mode="voice_memo"><b>Voice Memo</b><span>仅麦克风</span></button>
+      <button class="mode-option" type="button" data-mode="meeting"><b>Meeting</b><span>麦克风 + 指定 App</span></button>
+      <button class="mode-option" type="button" data-mode="system_capture"><b>System Capture</b><span>麦克风 + 全部系统音频</span></button>
+    </div>
+    <div class="capture-fields">
+      <label class="capture-field">麦克风<select id="captureMic"></select></label>
+      <label id="captureSourceField" class="capture-field" hidden>会议 App<select id="captureSource"></select></label>
+      <label id="captureOutputField" class="capture-field" hidden>系统输出<select id="captureOutput"></select></label>
+      <div id="captureSourcePreview" class="capture-source-preview" hidden aria-live="polite">
+        <img id="captureSourceIcon" class="capture-source-icon" alt="" hidden>
+        <span id="captureSourceFallback" class="capture-source-fallback" aria-hidden="true"></span>
+        <span class="capture-source-identity"><b id="captureSourcePreviewName"></b><span id="captureSourcePreviewMeta"></span></span>
+      </div>
+    </div>
+    <label id="captureScopeConfirm" class="scope-confirm" hidden><input id="captureScopeCheck" type="checkbox"><span id="captureScopeText"></span></label>
+    <div id="captureDialogError" class="capture-dialog-error" role="alert"></div>
+    <div class="capture-permission-actions">
+      <button id="capturePermissionRequest" type="button" hidden>授权并刷新来源</button>
+      <button id="capturePermissionSettings" type="button" hidden>打开系统设置</button>
+    </div>
+    <div class="capture-dialog-actions"><button id="captureCancel" type="button">取消</button><button class="primary" type="submit">开始录音</button></div>
+  </form>
+</dialog>
+<section id="recordingSheet" class="recording-sheet" aria-label="正在录音" hidden>
+  <div class="recording-card">
+    <div id="recordingState" class="recording-live">正在录音</div>
+    <div id="recordingTime" class="recording-time">00:00</div>
+    <div class="recording-source"><b id="recordingSourceName">设备麦克风</b><span id="recordingScope">仅录制你明确开启的麦克风</span></div>
+    <div id="recordingMeters" class="recording-meters" aria-label="实时录音电平">
+      <div id="microphoneMeterRow" class="recording-meter-row">
+        <span>麦克风</span>
+        <div id="microphoneMeter" class="recording-meter" role="meter" aria-label="麦克风实时电平" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>
+        <output id="microphoneMeterValue">−∞ dB</output>
+      </div>
+      <div id="systemMeterRow" class="recording-meter-row system" hidden>
+        <span>来源</span>
+        <div id="systemMeter" class="recording-meter" role="meter" aria-label="所选来源实时电平" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>
+        <output id="systemMeterValue">−∞ dB</output>
+      </div>
+    </div>
+    <div id="recordingWarning" class="recording-warning" role="alert"></div>
+    <div class="recording-controls">
+      <button id="recordingPause" type="button">暂停</button>
+      <button id="recordingStop" class="stop" type="button">停止并保存</button>
+    </div>
+  </div>
+</section>
 <script src="marked.min.js"></script>
 <script id="payload" type="application/json">__PAYLOAD__</script>
 <script>
@@ -335,6 +647,11 @@ const fmtDurCN = s => {
   const h = Math.floor(s / 3600), m = Math.round(s % 3600 / 60);
   return h ? `${h}小时${m ? m + "分" : ""}` : `${m}分`;
 };
+const fmtBytes = bytes => {
+  if (!Number.isFinite(bytes)) return "";
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(bytes < 10 * 1024 * 1024 ? 1 : 0)} MB`;
+};
 const durClass = s => s >= 2700 ? "long" : s >= 600 ? "mid" : "short";
 
 let state = { cat: null, spk: null, q: "", sel: null, tab: "summary" };
@@ -345,6 +662,2178 @@ const IS_APP_MOBILE = new URLSearchParams(location.search).has("m");
 const CAN_EDIT = location.protocol.startsWith("http") && !IS_APP_MOBILE;
 const PINNED = new Set();
 const isMobile = () => matchMedia("(max-width: 719px)").matches;
+const TAURI = window.__TAURI__ || null;
+const IS_ANDROID_APP = IS_APP_MOBILE && /Android/i.test(navigator.userAgent);
+const IS_IOS_APP = IS_APP_MOBILE && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+function safeMarkdownFragment(source) {
+  const fragment = document.createDocumentFragment();
+  if (!window.marked) {
+    fragment.append(document.createTextNode(String(source || "")));
+    return fragment;
+  }
+  const template = document.createElement("template");
+  template.innerHTML = marked.parse(String(source || ""));
+  const allowed = new Set(["P", "BR", "STRONG", "B", "EM", "I", "CODE", "PRE",
+    "UL", "OL", "LI", "BLOCKQUOTE", "H1", "H2", "H3", "H4", "H5", "H6", "HR", "A", "DEL"]);
+  for (const node of [...template.content.querySelectorAll("*")]) {
+    if (!allowed.has(node.tagName)) {
+      node.replaceWith(document.createTextNode(node.textContent || ""));
+      continue;
+    }
+    const href = node.tagName === "A" ? node.getAttribute("href") : null;
+    for (const attribute of [...node.attributes]) node.removeAttribute(attribute.name);
+    if (node.tagName === "A") {
+      let safe = null;
+      try {
+        const candidate = new URL(href || "", location.href);
+        if (["http:", "https:"].includes(candidate.protocol)) safe = candidate.href;
+      } catch (_) {}
+      if (safe) {
+        node.setAttribute("href", safe);
+        node.setAttribute("target", "_blank");
+        node.setAttribute("rel", "noopener noreferrer");
+      }
+    }
+  }
+  return template.content;
+}
+
+/* ---------- app-owned capture/import surface ---------- */
+const importBatches = [];
+let importBusy = false;
+let RUNTIME_FEATURES = {
+  recording: true,
+  audioImport: true,
+  directProcessing: true,
+  browserCapture: true,
+  localStt: false,
+  localQwenCandidate: false,
+  localMossCandidate: false,
+};
+let LOCAL_MODEL_STATUS = null;
+let QWEN_CANDIDATE_MODEL_STATUS = null;
+let MOSS_CANDIDATE_MODEL_STATUS = null;
+let MOSS_STATUS_TIMER = null;
+const MOSS_SELECTIONS = new Set();
+let NEW_RECORDING_ROUTE = null;
+let PROCESSING_PREFERENCE_KNOWN = false;
+let PROCESSING_PREFERENCE_PENDING = null;
+let LEGACY_WHISPER_PREFERENCE = false;
+let PROCESSING_PREFERENCE_BUSY = false;
+let PROCESSING_PREFERENCE_GENERATION = 0;
+const recordingRouteLabel = route => ({ remote: "云端处理", whisper_local: "Whisper 离线处理", moss_local: "MOSS 本地处理" })[route];
+function renderProcessingPreference(message = "") {
+  for (const [id, route] of [["remoteProcessingDefault", "remote"], ["localPackDefault", "whisper_local"], ["mossPackDefault", "moss_local"]]) {
+    $("#" + id).checked = PROCESSING_PREFERENCE_KNOWN && NEW_RECORDING_ROUTE === route;
+    $("#" + id).disabled = PROCESSING_PREFERENCE_BUSY
+      || (route === "whisper_local" && !RUNTIME_FEATURES.localStt)
+      || (route === "moss_local" && !mossUiEnabled());
+  }
+  $("#processingPreferenceState").textContent = message || (!PROCESSING_PREFERENCE_KNOWN
+    ? "处理偏好暂不可用 · 新录音会留在本机，等待明确选择"
+    : LEGACY_WHISPER_PREFERENCE ? "沿用此页面已有的 Whisper 选择；保存后可在 App 重启后继续使用"
+    : NEW_RECORDING_ROUTE ? "新录音默认使用" + recordingRouteLabel(NEW_RECORDING_ROUTE) + " · 已有任务保持原选择"
+    : "尚未选择默认方式 · 新录音会留在本机，等待明确选择");
+  $("#processingPreferenceRetry").hidden = PROCESSING_PREFERENCE_KNOWN;
+  $("#processingPreferenceRetry").disabled = PROCESSING_PREFERENCE_BUSY;
+  $("#processingPreferenceSaveWhisper").hidden = !LEGACY_WHISPER_PREFERENCE;
+  $("#processingPreferenceSaveWhisper").disabled = PROCESSING_PREFERENCE_BUSY;
+}
+async function loadProcessingPreference() {
+  const generation = ++PROCESSING_PREFERENCE_GENERATION;
+  PROCESSING_PREFERENCE_BUSY = true;
+  renderProcessingPreference("正在读取处理偏好 · 新录音暂留在本机");
+  try {
+    const preference = await TAURI.core.invoke("get_processing_preference");
+    if (generation !== PROCESSING_PREFERENCE_GENERATION) return;
+    if (preference.newRecordingRoute !== null && !recordingRouteLabel(preference.newRecordingRoute)) throw new Error("invalid preference");
+    LEGACY_WHISPER_PREFERENCE = preference.newRecordingRoute === null
+      && localStorage.getItem("echowall-prefer-local-model") === "1";
+    NEW_RECORDING_ROUTE = LEGACY_WHISPER_PREFERENCE ? "whisper_local" : preference.newRecordingRoute;
+    PROCESSING_PREFERENCE_KNOWN = true;
+  } catch (_) {
+    if (generation !== PROCESSING_PREFERENCE_GENERATION) return;
+    PROCESSING_PREFERENCE_KNOWN = false;
+    LEGACY_WHISPER_PREFERENCE = false;
+  }
+  PROCESSING_PREFERENCE_BUSY = false;
+  renderProcessingPreference();
+}
+function ensureProcessingPreference() {
+  return PROCESSING_PREFERENCE_PENDING ||= loadProcessingPreference();
+}
+async function awaitLatestProcessingPreference() {
+  let pending;
+  do {
+    pending = ensureProcessingPreference();
+    await pending;
+  } while (pending !== PROCESSING_PREFERENCE_PENDING);
+}
+function saveProcessingPreference(route) {
+  const generation = ++PROCESSING_PREFERENCE_GENERATION;
+  const previous = PROCESSING_PREFERENCE_PENDING;
+  PROCESSING_PREFERENCE_KNOWN = false;
+  PROCESSING_PREFERENCE_BUSY = true;
+  renderProcessingPreference("正在保存处理偏好 · 新录音暂留在本机");
+  PROCESSING_PREFERENCE_PENDING = (async () => {
+    if (previous) await previous;
+    try {
+      const preference = await TAURI.core.invoke("set_processing_preference", { request: { newRecordingRoute: route } });
+      if (generation !== PROCESSING_PREFERENCE_GENERATION) return;
+      if (preference.newRecordingRoute !== route) throw new Error("preference not confirmed");
+      NEW_RECORDING_ROUTE = route;
+      PROCESSING_PREFERENCE_KNOWN = true;
+      LEGACY_WHISPER_PREFERENCE = false;
+      localStorage.removeItem("echowall-prefer-local-model");
+    } catch (_) {
+      if (generation !== PROCESSING_PREFERENCE_GENERATION) return;
+      PROCESSING_PREFERENCE_KNOWN = false;
+      LEGACY_WHISPER_PREFERENCE = false;
+    }
+    PROCESSING_PREFERENCE_BUSY = false;
+    renderProcessingPreference();
+  })();
+  return PROCESSING_PREFERENCE_PENDING;
+}
+const mossUiEnabled = () => !IS_APP_MOBILE && !!RUNTIME_FEATURES.directProcessing
+  && !!RUNTIME_FEATURES.localStt && !!RUNTIME_FEATURES.localMossCandidate;
+const mossModelsReady = () => mossUiEnabled() && !!MOSS_CANDIDATE_MODEL_STATUS?.supported
+  && !!MOSS_CANDIDATE_MODEL_STATUS?.enabled && !!MOSS_CANDIDATE_MODEL_STATUS?.memorySufficient
+  && !!MOSS_CANDIDATE_MODEL_STATUS?.installed && !MOSS_CANDIDATE_MODEL_STATUS?.installing
+  && ["moss", "speakerkit", "summary"].every(id =>
+    MOSS_CANDIDATE_MODEL_STATUS.components?.some(component => component.id === id && component.installed));
+const unselectedQueueEligible = result => result.status?.state === "queued"
+  && !result.status?.remoteTaskAccepted && !result.status?.remoteTaskSuperseded
+  && !result.status?.transcriptAvailable && !result.status?.summaryAvailable
+  && [undefined, null, "miaoji_remote"].includes(result.status?.transcriptionBackend);
+const mossNewQueueEligible = result => mossUiEnabled() && unselectedQueueEligible(result);
+const basename = path => String(path || "").split(/[\\/]/).pop() || "录音文件";
+const localDateTimeValue = value => {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  const two = number => String(number).padStart(2, "0");
+  return `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())}`
+    + `T${two(date.getHours())}:${two(date.getMinutes())}`;
+};
+async function confirmImportReviewForRow(row, result, button, maximumSpeakerCount = 50) {
+  const review = row.querySelector(".import-review");
+  if (!review) return true;
+  const [time, title, speakers] = review.querySelectorAll("input");
+  if (!time.value || !Number.isFinite(new Date(time.value).getTime())) {
+    row.querySelector(".import-status").textContent = "请确认时间";
+    time.focus();
+    return false;
+  }
+  const speakerCount = speakers.value ? Number(speakers.value) : null;
+  if (speakerCount !== null
+      && (!Number.isInteger(speakerCount) || speakerCount < 1
+        || speakerCount > maximumSpeakerCount)) {
+    row.querySelector(".import-status").textContent = `人数应为 1–${maximumSpeakerCount}`;
+    speakers.focus();
+    return false;
+  }
+  if (button) button.disabled = true;
+  row.querySelector(".import-status").textContent = "保存确认";
+  try {
+    await TAURI.core.invoke("confirm_import_review", { request: {
+      recordingId: result.recordingId,
+      capturedAt: new Date(time.value).toISOString(),
+      displayTitle: title.value.trim() || null,
+      speakerCount,
+    }});
+    review.remove();
+    return true;
+  } catch (_) {
+    if (button) button.disabled = false;
+    row.querySelector(".import-status").textContent = "确认未保存";
+    return false;
+  }
+}
+function renderImportResult(result) {
+  const row = el("div", "import-item" + (result.status === "error" ? " err" : ""));
+  if (result.recordingId) row.dataset.recordingId = result.recordingId;
+  const labels = {
+    imported: "待确认",
+    duplicate: "已存在",
+    recovered: "已恢复",
+    native_ready: "本地就绪",
+    error: "未导入",
+  };
+  row.append(
+    el("div", "import-name", result.importedName || basename(result.sourcePath)),
+    el("div", "import-status", labels[result.status] || result.status),
+  );
+  if (result.status === "error" && result.error) {
+    row.append(el("div", "import-detail", result.error.message || "检查文件后重试"));
+  } else if (result.status === "duplicate") {
+    row.append(el("div", "import-detail", "内容相同，没有创建第二份"));
+    if (result.recordingId) {
+      const actions = el("div", "processing-row-actions");
+      const existing = DATA.entries.find(entry => entry.recording_id === result.recordingId);
+      if (existing) {
+        const open = el("button", "import-start", "打开已有录音");
+        open.type = "button";
+        open.onclick = () => select(existing.key);
+        actions.append(open);
+      }
+      if (RUNTIME_FEATURES.directProcessing) {
+        const reprocess = el("button", "import-start", "重新处理");
+        reprocess.type = "button";
+        reprocess.onclick = () => startReprocess(result.recordingId, reprocess);
+        actions.append(reprocess);
+      }
+      row.append(actions);
+    }
+  } else {
+    const facts = [
+      result.codec,
+      result.durationMs ? fmtDurCN(result.durationMs / 1000) : null,
+      result.sizeBytes ? fmtBytes(result.sizeBytes) : null,
+    ].filter(Boolean);
+    if (facts.length) row.append(el("div", "import-detail", facts.join(" · ")));
+    if (result.recordingId && result.proposedCapturedAt) {
+      const review = el("div", "import-review");
+      const time = document.createElement("input");
+      time.type = "datetime-local";
+      time.required = true;
+      time.value = localDateTimeValue(result.proposedCapturedAt);
+      time.setAttribute("aria-label", "录音时间");
+      const title = document.createElement("input");
+      title.type = "text";
+      title.maxLength = 200;
+      title.placeholder = "可选";
+      title.setAttribute("aria-label", "显示标题");
+      const speakers = document.createElement("input");
+      speakers.type = "number";
+      speakers.min = "1";
+      speakers.max = "50";
+      speakers.placeholder = "自动";
+      speakers.inputMode = "numeric";
+      speakers.setAttribute("aria-label", "说话人数");
+      const field = (label, input) => {
+        const wrapper = document.createElement("label");
+        wrapper.append(label, input);
+        return wrapper;
+      };
+      review.append(
+        field("录音时间 · 来源可信度低时请修正", time),
+        field("显示标题", title),
+        field("说话人数", speakers),
+      );
+      row.append(review);
+    }
+    if (result.recordingId) {
+      const actions = el("div", "processing-row-actions");
+      const start = el("button", "import-start", "云端处理");
+      start.type = "button";
+      start.onclick = async () => {
+        if (!await confirmImportReviewForRow(row, result, start)) return;
+        actions.remove();
+        row.dataset.processing = "true";
+        row.querySelector(".import-status").textContent = "正在连接";
+        processRecordingIds([result.recordingId], true);
+      };
+      const discard = el("button", "import-start", "丢弃本机副本");
+      discard.type = "button";
+      discard.onclick = () => discardLocalRecording(result.recordingId, row, discard);
+      if (RUNTIME_FEATURES.directProcessing) {
+        actions.append(start);
+        if (RUNTIME_FEATURES.localStt) {
+          const local = el("button", "import-start", "Whisper 离线处理");
+          local.type = "button";
+          local.onclick = async () => {
+            if (!LOCAL_MODEL_STATUS?.installed) {
+              openProcessingDialog(true);
+              return;
+            }
+            if (!await confirmImportReviewForRow(row, result, local, 16)) return;
+            actions.remove();
+            await startFullLocalProcessing(result.recordingId, local);
+          };
+          actions.append(local);
+        }
+        if (RUNTIME_FEATURES.localQwenCandidate) {
+          const qwen = el("button", "import-start", "Qwen 候选离线处理");
+          qwen.type = "button";
+          qwen.onclick = async () => {
+            if (!LOCAL_MODEL_STATUS?.installed || !QWEN_CANDIDATE_MODEL_STATUS?.installed) {
+              openProcessingDialog(true);
+              return;
+            }
+            if (!await confirmImportReviewForRow(row, result, qwen, 16)) return;
+            actions.remove();
+            await startQwenCandidateProcessing(result.recordingId, qwen);
+          };
+          actions.append(qwen);
+        }
+        if (mossUiEnabled()) {
+          const moss = el("button", "import-start", "MOSS 本地处理");
+          moss.type = "button";
+          moss.onclick = () => startMossCandidateProcessing(result.recordingId, moss, result);
+          actions.append(moss);
+        }
+      }
+      else row.querySelector(".import-status").textContent = "处理已停用 · 本机保留";
+      actions.append(discard);
+      row.append(actions);
+    }
+  }
+  return row;
+}
+const processingStateLabel = state => ({
+  ready: "本地就绪",
+  uploading: "上传中",
+  queued: "等待转写",
+  transcribing: "转写中",
+  local_transcribing: "本机转写中",
+  preparing_local_moss: "MOSS 本地准备中",
+  submitting: "提交转写",
+  polling: "转写中",
+  summarizing: "生成摘要",
+  summary_submitting: "提交摘要",
+  publishing: "写入档案",
+  complete: "已完成",
+  offline: "离线保留",
+  upload_failed: "上传失败",
+  provider_failed: "处理失败",
+  publish_failed: "归档失败",
+  submit_ambiguous: "需核对提交",
+  summary_ambiguous: "摘要提交需确认",
+  publish_ambiguous: "需核对投递",
+  publish_conflict: "档案有新版本",
+  canceled_before_upload: "已取消",
+  canceled_after_upload: "已取消 · 待清理",
+  discarding: "正在丢弃本机副本",
+  discarded: "已丢弃",
+})[state] || state;
+const retryableProcessingStates = new Set([
+  "provider_failed", "publish_failed", "publish_conflict", "summary_ambiguous",
+]);
+const terminalProcessingStates = new Set([
+  "complete", "canceled_before_upload", "canceled_after_upload", "discarded",
+]);
+const activeProcessingStates = new Set([
+  "queued", "uploading", "transcribing", "local_transcribing", "preparing_local_moss", "submitting", "polling",
+  "summarizing", "summary_submitting", "publishing",
+]);
+async function exportRecordingOriginal(recordingId) {
+  try {
+    const exported = await TAURI.core.invoke("export_recording_original", {
+      request: { recordingId },
+    });
+    toast(exported.exported ? "录音已导出" : "已取消导出");
+  } catch (_) {
+    toast("导出失败 · 本机录音仍安全保留");
+  }
+}
+function ensureProcessingRow(recordingId, label = "本机处理任务") {
+  let row = $(`.import-item[data-recording-id="${CSS.escape(recordingId)}"]`);
+  if (row) return row;
+  row = el("div", "import-item");
+  row.dataset.recordingId = recordingId;
+  row.dataset.processing = "true";
+  row.append(
+    el("div", "import-name", `${label} · ${recordingId.slice(0, 8)}`),
+    el("div", "import-status", "准备中"),
+    el("div", "import-detail", "录音和处理检查点保存在本机"),
+  );
+  $("#importQueue").prepend(row);
+  return row;
+}
+async function startReprocess(recordingId, button) {
+  if (!confirm("使用已保存的逐字稿重新生成摘要并发布？不会重新转写；摘要后端和档案位置保持原选择。")) return;
+  if (button) button.disabled = true;
+  const row = ensureProcessingRow(recordingId, "重新处理");
+  row.dataset.processing = "true";
+  row.querySelector(".import-status").textContent = "重新生成摘要";
+  try {
+    const next = await TAURI.core.invoke("reprocess_recording", {
+      request: { recordingId },
+    });
+    const stateName = updateProcessingRow(next);
+    if (stateName === "complete") {
+      toast("重新处理完成 · 正在刷新档案");
+      setTimeout(() => location.reload(), 700);
+    } else if (stateName && !terminalProcessingStates.has(stateName)) {
+      setTimeout(() => processRecordingIds([recordingId]), 10000);
+    }
+  } catch (_) {
+    row.classList.add("err");
+    row.querySelector(".import-status").textContent = "重新处理未开始";
+    toast("重新处理未开始 · 原录音和转写仍保留");
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+async function backUpLocalRecordingToCloud(recordingId, button) {
+  if (!confirm("把这条已完成的本机逐字稿、摘要和音频备份到你配置的私有 GitHub/R2？不会调用 TOS、妙记或 Gemini。")) return;
+  button.disabled = true;
+  const row = ensureProcessingRow(recordingId, "私有云备份");
+  row.dataset.processing = "true";
+  row.querySelector(".import-status").textContent = "正在备份已验证的本机结果";
+  try {
+    const next = await TAURI.core.invoke("back_up_local_recording_to_cloud", {
+      request: { recordingId },
+    });
+    const stateName = updateProcessingRow(next);
+    if (stateName === "complete") {
+      toast("私有云备份完成");
+      setTimeout(() => location.reload(), 700);
+    } else if (stateName && !terminalProcessingStates.has(stateName)) {
+      setTimeout(() => processRecordingIds([recordingId]), 10000);
+    } else if (next.errorMessage) {
+      toast("备份未开始 · 请先配置私有 GitHub/R2");
+    }
+  } catch (_) {
+    toast("备份未开始 · 本机档案保持完整");
+  } finally {
+    button.disabled = false;
+  }
+}
+async function discardLocalRecording(recordingId, row, button) {
+  if (!confirm("永久删除 EchoWall 保存的本机录音副本？此操作无法撤销；如需保留，请先导出原录音。")) return;
+  button.disabled = true;
+  try {
+    const next = await TAURI.core.invoke("discard_processing_recording", {
+      request: { recordingId },
+    });
+    if (next.status && next.status.state === "discarded") {
+      row.remove();
+      toast("本机录音副本已丢弃");
+      return;
+    }
+    updateProcessingRow(next);
+    toast(next.errorMessage || "暂时无法丢弃 · 本机录音仍保留");
+  } catch (_) {
+    toast("暂时无法丢弃 · 本机录音仍保留");
+  } finally {
+    button.disabled = false;
+  }
+}
+function renderProcessingActions(row, result) {
+  row.querySelector(".processing-row-actions")?.remove();
+  if (!result.recordingId) return;
+  const actions = el("div", "processing-row-actions");
+  const stateName = result.status && result.status.state;
+  const isMoss = result.status?.transcriptionBackend === "moss_local";
+  const committing = result.errorCode === "publication_commit_in_progress";
+  const exportButton = el("button", "import-start", "导出原录音");
+  exportButton.type = "button";
+  exportButton.onclick = async () => {
+    exportButton.disabled = true;
+    try {
+      await exportRecordingOriginal(result.recordingId);
+    } catch (_) { toast("导出失败 · 原录音仍保留在 App 中"); }
+    finally { exportButton.disabled = false; }
+  };
+  actions.append(exportButton);
+  const canDiscard = stateName === "canceled_before_upload"
+    || (stateName === "canceled_after_upload"
+      && result.status.temporaryCleanupPending === false);
+  if (canDiscard) {
+    const discard = el("button", "import-start", "丢弃本机副本");
+    discard.type = "button";
+    discard.onclick = () => discardLocalRecording(result.recordingId, row, discard);
+    actions.append(discard);
+  }
+  const takeoverEligible = !isMoss && RUNTIME_FEATURES.directProcessing && RUNTIME_FEATURES.localStt
+    && stateName === "polling"
+    && result.errorCode === "processing_unavailable"
+    && result.status?.remoteTaskAccepted
+    && !result.status?.remoteTaskSuperseded;
+  if (takeoverEligible) {
+    const takeover = el(
+      "button",
+      "import-start",
+      LOCAL_MODEL_STATUS?.installed ? "接管为完全离线模型" : "安装本地模型后接管",
+    );
+    takeover.type = "button";
+    takeover.onclick = () => takeOverWithFullLocal(result.recordingId, takeover);
+    actions.prepend(takeover);
+    if (RUNTIME_FEATURES.localQwenCandidate) {
+      const qwenTakeover = el(
+        "button",
+        "import-start",
+        LOCAL_MODEL_STATUS?.installed && QWEN_CANDIDATE_MODEL_STATUS?.installed
+          ? "用 Qwen 候选接管"
+          : "安装 Qwen 候选后接管",
+      );
+      qwenTakeover.type = "button";
+      qwenTakeover.onclick = () => takeOverWithQwenCandidate(result.recordingId, qwenTakeover);
+      actions.prepend(qwenTakeover);
+    }
+  }
+  const transcriptOnlyEligible = RUNTIME_FEATURES.directProcessing && RUNTIME_FEATURES.localStt
+    && stateName === "provider_failed"
+    && ["whisper_local", "qwen_local"].includes(result.status?.transcriptionBackend)
+    && result.status?.diarizationSelected
+    && !result.status?.transcriptOnlyAccepted
+    && !result.status?.transcriptAvailable;
+  if (transcriptOnlyEligible) {
+    const transcriptOnly = el("button", "import-start", "跳过说话人分离并重试");
+    transcriptOnly.type = "button";
+    transcriptOnly.onclick = () => acceptLocalTranscriptOnly(result.recordingId, transcriptOnly);
+    actions.prepend(transcriptOnly);
+  }
+  const localEligible = RUNTIME_FEATURES.directProcessing && RUNTIME_FEATURES.localStt
+    && !["whisper_local", "qwen_local", "moss_local"].includes(result.status?.transcriptionBackend)
+    && (stateName === "provider_failed"
+      || (["uploading", "transcribing"].includes(stateName)
+        && result.errorCode === "processing_unavailable"));
+  if (localEligible) {
+    const local = el(
+      "button",
+      "import-start",
+      LOCAL_MODEL_STATUS?.installed ? "改用完全离线模型" : "安装本地模型",
+    );
+    local.type = "button";
+    local.onclick = () => startFullLocalProcessing(result.recordingId, local);
+    actions.prepend(local);
+  }
+  if (RUNTIME_FEATURES.directProcessing && retryableProcessingStates.has(stateName)) {
+    const retry = el("button", "import-start", "重试");
+    retry.type = "button";
+    retry.onclick = async () => {
+      retry.disabled = true;
+      try {
+        const next = await TAURI.core.invoke("retry_processing_recording", {
+          request: { recordingId: result.recordingId },
+        });
+        updateProcessingRow(next);
+        if (!next.errorCode && next.status && !terminalProcessingStates.has(next.status.state)) {
+          setTimeout(() => processRecordingIds([result.recordingId]), 10000);
+        }
+      } catch (_) { toast("重试未开始 · 录音仍安全保留"); }
+      finally { retry.disabled = false; }
+    };
+    actions.prepend(retry);
+  }
+  if (RUNTIME_FEATURES.directProcessing && unselectedQueueEligible(result) && !MOSS_SELECTIONS.has(result.recordingId)) {
+    const start = el("button", "import-start", "云端处理");
+    start.type = "button";
+    start.onclick = () => { actions.remove(); processRecordingIds([result.recordingId], true); };
+    actions.prepend(start);
+    if (RUNTIME_FEATURES.localStt) {
+      const whisper = el("button", "import-start", "Whisper 离线处理");
+      whisper.type = "button";
+      whisper.onclick = () => startFullLocalProcessing(result.recordingId, whisper);
+      actions.prepend(whisper);
+    }
+    if (mossUiEnabled()) {
+      const moss = el("button", "import-start", "MOSS 本地处理");
+      moss.type = "button";
+      moss.onclick = () => startMossCandidateProcessing(result.recordingId, moss);
+      actions.prepend(moss);
+    }
+  }
+  if (isMoss && !MOSS_SELECTIONS.has(result.recordingId)
+      && (committing || activeProcessingStates.has(stateName))) {
+    const resume = el("button", "import-start", committing ? "继续核验档案" : "继续 MOSS 处理");
+    resume.type = "button";
+    resume.onclick = () => { resume.disabled = true; processRecordingIds([result.recordingId]); };
+    actions.prepend(resume);
+  }
+  if (!committing && stateName && stateName !== "discarding" && !terminalProcessingStates.has(stateName)) {
+    const cancel = el("button", "import-start", "取消处理");
+    cancel.type = "button";
+    cancel.onclick = async () => {
+      if (!confirm("停止后续处理？本机录音和已完成的转写检查点会保留。")) return;
+      cancel.disabled = true;
+      try {
+        const next = await TAURI.core.invoke("cancel_processing_recording", {
+          request: { recordingId: result.recordingId },
+        });
+        updateProcessingRow(next);
+      } catch (_) { toast("取消未确认 · 请重试"); }
+      finally { cancel.disabled = false; }
+    };
+    actions.append(cancel);
+  }
+  row.append(actions);
+}
+function updateProcessingRow(result) {
+  const row = $(`.import-item[data-recording-id="${CSS.escape(result.recordingId)}"]`);
+  if (!row) return null;
+  const status = row.querySelector(".import-status");
+  const detail = row.querySelector(".import-detail");
+  if (result.status) {
+    const isMoss = result.status.transcriptionBackend === "moss_local";
+    if (isMoss || row.dataset.backend === "moss_local") {
+      const revision = result.status.revision;
+      if (Number.isSafeInteger(revision)) {
+        if (Number(row.dataset.mossRevision || -1) > revision) return row.dataset.processingState || null;
+        row.dataset.mossRevision = String(revision);
+      }
+    }
+    row.dataset.backend = result.status.transcriptionBackend || "";
+    row.dataset.processingState = result.status.state;
+    status.textContent = result.status.state === "canceled_after_upload"
+      && !result.status.temporaryCleanupPending
+      ? "已取消 · 临时上传已清理"
+      : processingStateLabel(result.status.state);
+    if (isMoss && !status.textContent.includes("MOSS")) status.textContent = `MOSS · ${status.textContent}`;
+    if (result.errorCode === "publication_commit_in_progress") status.textContent = "档案提交中 · 暂不能取消";
+    if (result.errorCode === "remote_effect_already_started") status.textContent = "云端任务已开始 · 未切换 MOSS";
+    if (detail && isMoss && !result.errorMessage) detail.textContent = "MOSS 转写 · 匿名说话人 · 本地摘要 · 本机档案";
+    if (detail && result.errorMessage) detail.textContent = result.errorMessage;
+    row.classList.toggle("err", /failed|ambiguous|conflict/.test(result.status.state));
+    renderProcessingActions(row, result);
+    return result.status.state;
+  }
+  row.classList.add("err");
+  status.textContent = "已保存在本机";
+  if (detail) detail.textContent = result.errorMessage || "检查处理配置后重试";
+  renderProcessingActions(row, result);
+  return null;
+}
+async function processRecordingIds(recordingIds, explicitQueuedChoice = false) {
+  recordingIds = recordingIds.filter(id => {
+    if (MOSS_SELECTIONS.has(id)) return false;
+    const row = $('.import-item[data-recording-id="' + CSS.escape(id) + '"]');
+    // Polling, reopen and credential-save callbacks never choose a remote
+    // route for unselected queued recordings. Native startup enforces this too.
+    return explicitQueuedChoice || (row?.dataset.processingState && row.dataset.processingState !== "queued");
+  });
+  if (!recordingIds.length) return;
+  let response;
+  for (const recordingId of recordingIds) {
+    const row = $(`.import-item[data-recording-id="${CSS.escape(recordingId)}"]`);
+    if (row) row.dataset.processing = "true";
+  }
+  try {
+    response = await TAURI.core.invoke("process_recordings", {
+      request: { recordingIds },
+    });
+  } catch (_) {
+    $("#captureState").textContent = "已保存在本机 · App 内处理暂不可用";
+    return;
+  }
+  const pending = [];
+  let completed = false;
+  for (const result of response.results || []) {
+    const row = $(`.import-item[data-recording-id="${CSS.escape(result.recordingId)}"]`);
+    if (!row) continue;
+    const stateName = updateProcessingRow(result);
+    if (stateName) {
+      if (stateName === "complete") completed = true;
+      else if (!terminalProcessingStates.has(stateName)) pending.push(result.recordingId);
+    } else {
+      if (["provider_rejected", "credentials_missing"].includes(result.errorCode)) {
+        $("#captureState").hidden = true;
+        $("#processingSetupBtn").hidden = false;
+      }
+    }
+  }
+  if (completed) {
+    $("#captureState").textContent = "处理完成 · 正在刷新档案";
+    setTimeout(() => location.reload(), 700);
+  } else if (pending.length) {
+    $("#captureState").textContent = `${pending.length} 个正在处理`;
+    setTimeout(() => processRecordingIds(pending), 10000);
+  }
+}
+function pendingRecordingIds() {
+  return [...document.querySelectorAll('.import-item[data-recording-id][data-processing="true"]')]
+    .filter(row => row.querySelector(".import-status").textContent !== "已完成")
+    .map(row => row.dataset.recordingId);
+}
+async function restoreProcessingQueue() {
+  let response;
+  try { response = await TAURI.core.invoke("list_processing_recordings"); }
+  catch (_) { return; }
+  const active = [];
+  for (const result of response.results || []) {
+    let row = $(`.import-item[data-recording-id="${CSS.escape(result.recordingId)}"]`);
+    if (!row) row = ensureProcessingRow(result.recordingId, "已恢复任务");
+    const stateName = updateProcessingRow(result);
+    // New route choices and persisted MOSS work require an explicit action;
+    // restoring the page must not start MOSS or race a queued choice to cloud.
+    if (activeProcessingStates.has(stateName) && stateName !== "queued" && !mossNewQueueEligible(result)
+        && result.status?.transcriptionBackend !== "moss_local") active.push(result.recordingId);
+  }
+  if (RUNTIME_FEATURES.directProcessing && active.length) {
+    setTimeout(() => processRecordingIds(active.slice(0, 16)), 1000);
+  }
+}
+const formatModelBytes = bytes => {
+  const value = Number(bytes || 0);
+  return value >= 1024 * 1024 * 1024
+    ? `${(value / 1024 / 1024 / 1024).toFixed(1)} GiB`
+    : `${Math.round(value / 1024 / 1024)} MiB`;
+};
+function renderLocalModelStatus(status) {
+  LOCAL_MODEL_STATUS = status || null;
+  const card = $("#localPack");
+  if (!card) return;
+  const supported = !!status?.supported && !!RUNTIME_FEATURES.localStt;
+  card.hidden = !supported;
+  $("#localModelBtn").hidden = !supported;
+  if (!supported) return;
+  const installed = !!status.installed;
+  const installing = !!status.installing;
+  const memorySufficient = !!status.memorySufficient;
+  const total = Number(status.totalBytes || 0);
+  const downloaded = Math.min(total, Number(status.downloadedBytes || 0));
+  $("#localPackState").textContent = installing
+    ? `下载中 · ${formatModelBytes(downloaded)} / ${formatModelBytes(total)}`
+    : installed ? "已安装 · 说话人和本地摘要默认开启"
+    : memorySufficient ? `未安装 · ${formatModelBytes(total)}`
+    : `需要至少 ${formatModelBytes(status.minimumMemoryBytes)} unified memory`;
+  $("#localPackLicense").textContent = (status.licenses || []).join(" · ");
+  const progress = $("#localPackProgress");
+  progress.hidden = !installing;
+  progress.max = Math.max(1, total);
+  progress.value = downloaded;
+  $("#localPackInstall").hidden = installed || installing;
+  $("#localPackInstall").disabled = !memorySufficient;
+  $("#localPackCancel").hidden = !installing;
+  $("#localPackRemove").hidden = !installed || installing;
+  $("#localPackDefault").disabled = PROCESSING_PREFERENCE_BUSY || !supported;
+}
+async function refreshLocalModelStatus() {
+  if (!RUNTIME_FEATURES.localStt) return null;
+  try {
+    const status = await TAURI.core.invoke("local_model_pack_status");
+    renderLocalModelStatus(status);
+    return status;
+  } catch (_) {
+    $("#localPackState").textContent = "状态不可用";
+    return null;
+  }
+}
+function renderQwenCandidateModelStatus(status) {
+  QWEN_CANDIDATE_MODEL_STATUS = status || null;
+  const card = $("#qwenCandidatePack");
+  if (!card) return;
+  const supported = !!status?.supported && !!RUNTIME_FEATURES.localQwenCandidate;
+  card.hidden = !supported;
+  if (!supported) return;
+  const installed = !!status.installed;
+  const installing = !!status.installing;
+  const memorySufficient = !!status.memorySufficient;
+  const total = Number(status.totalBytes || 0);
+  const downloaded = Math.min(total, Number(status.downloadedBytes || 0));
+  $("#qwenCandidateState").textContent = installing
+    ? `下载中 · ${formatModelBytes(downloaded)} / ${formatModelBytes(total)}`
+    : installed ? "已安装 · 仍使用 Whisper 默认"
+    : memorySufficient ? `未安装 · ${formatModelBytes(total)}`
+    : `需要至少 ${formatModelBytes(status.minimumMemoryBytes)} unified memory`;
+  $("#qwenCandidateLicense").textContent = (status.licenses || []).join(" · ");
+  const progress = $("#qwenCandidateProgress");
+  progress.hidden = !installing;
+  progress.max = Math.max(1, total);
+  progress.value = downloaded;
+  $("#qwenCandidateInstall").hidden = installed || installing;
+  $("#qwenCandidateInstall").disabled = !memorySufficient;
+  $("#qwenCandidateCancel").hidden = !installing;
+  $("#qwenCandidateRemove").hidden = !installed || installing;
+}
+async function refreshQwenCandidateModelStatus() {
+  if (!RUNTIME_FEATURES.localQwenCandidate) return null;
+  try {
+    const status = await TAURI.core.invoke("qwen_candidate_model_pack_status");
+    renderQwenCandidateModelStatus(status);
+    return status;
+  } catch (_) {
+    $("#qwenCandidateState").textContent = "状态不可用";
+    return null;
+  }
+}
+function renderMossCandidateModelStatus(status) {
+  clearTimeout(MOSS_STATUS_TIMER);
+  MOSS_STATUS_TIMER = null;
+  MOSS_CANDIDATE_MODEL_STATUS = status || null;
+  const visible = mossUiEnabled();
+  $("#mossCandidatePack").hidden = !visible;
+  $("#mossModelBtn").hidden = !visible;
+  if (!visible) return;
+  const supported = !!status?.supported && !!status?.enabled;
+  const installing = !!status?.installing;
+  const ready = mossModelsReady();
+  const components = Array.isArray(status?.components) ? status.components : [];
+  const total = Math.max(0, Number(status?.totalBytes || 0));
+  const downloaded = Math.max(0, Math.min(total, Number(status?.downloadedBytes || 0)));
+  $("#mossCandidateState").textContent = !status ? "状态不可用 · 请重新检查"
+    : !supported ? "此设备或版本暂不可用"
+    : installing ? `下载中 · ${formatModelBytes(downloaded)} / ${formatModelBytes(total)}`
+    : !status.memorySufficient ? `需要至少 ${formatModelBytes(status.minimumMemoryBytes)} 内存`
+    : ready ? "已安装 · 可在本机处理"
+    : status.errorCode ? "安装未完成 · 可安全重试"
+    : `依赖未齐 · ${formatModelBytes(total)}`;
+  const list = $("#mossCandidateComponents");
+  list.replaceChildren();
+  for (const [id, label] of [["moss", "MOSS 转写"], ["speakerkit", "SpeakerKit 说话人"], ["summary", "Qwen 本地摘要"]]) {
+    const component = components.find(component => component.id === id);
+    const row = el("li");
+    row.append(el("span", null, label), el("span", null, component?.installed ? "已安装" : "待安装"));
+    list.append(row);
+  }
+  $("#mossCandidateLicense").textContent = (status?.licenses || []).join(" · ");
+  const progress = $("#mossCandidateProgress");
+  progress.hidden = !installing;
+  progress.max = Math.max(1, total);
+  progress.value = downloaded;
+  $("#mossCandidateInstall").hidden = ready || installing;
+  $("#mossCandidateInstall").disabled = !supported || !status?.memorySufficient;
+  $("#mossCandidateInstall").textContent = status?.errorCode ? "重试安装 MOSS" : "安装 MOSS 模型包";
+  $("#mossCandidateCancel").hidden = !installing;
+  $("#mossCandidateRefresh").hidden = !!status;
+  $("#mossPackDefault").disabled = PROCESSING_PREFERENCE_BUSY || !supported;
+  const removable = supported && !installing && (downloaded > 0 || components.some(component => component.installed));
+  $("#mossCandidateRemove").hidden = !removable;
+  $("#mossRemoveSharedLabel").hidden = !removable;
+  if (installing) MOSS_STATUS_TIMER = setTimeout(refreshMossCandidateModelStatus, 800);
+}
+async function refreshMossCandidateModelStatus() {
+  if (!mossUiEnabled()) return null;
+  try {
+    const status = await TAURI.core.invoke("moss_pipeline_model_status");
+    renderMossCandidateModelStatus(status);
+    return status;
+  } catch (_) {
+    renderMossCandidateModelStatus(null);
+    return null;
+  }
+}
+function openMossModelDialog() {
+  if (!mossUiEnabled()) return;
+  $("#processingError").textContent = "";
+  $("#processingDialog").showModal();
+  $("#mossCandidatePack").hidden = false;
+  $("#mossCandidatePack").scrollIntoView({ block: "start" });
+  const action = $("#mossCandidatePack button:not([hidden]):not(:disabled)");
+  action?.focus({ preventScroll: true });
+}
+async function startMossCandidateProcessing(recordingId, button, imported = null, fromRecordingPreference = false) {
+  if (!mossUiEnabled() || MOSS_SELECTIONS.has(recordingId)) return;
+  if (!mossModelsReady() && !fromRecordingPreference) { openMossModelDialog(); return; }
+  // Saved preferences choose MOSS durably before native model verification.
+  // Missing models become recoverable local work, never an upload fallback.
+  const row = ensureProcessingRow(recordingId, "MOSS 本地处理");
+  MOSS_SELECTIONS.add(recordingId);
+  const originalActions = [...row.querySelectorAll(".processing-row-actions button")];
+  originalActions.forEach(action => { action.disabled = true; });
+  let next = null;
+  let selectionAttempted = false;
+  try {
+    if (imported && !await confirmImportReviewForRow(row, imported, button, 16)) return;
+    row.dataset.processing = "true";
+    // Rust persists this Queued-only selection before its first await. While
+    // it runs, allow cancellation but suppress every competing route action.
+    selectionAttempted = true;
+    const pending = TAURI.core.invoke("process_recording_with_moss_candidate", {
+      request: { recordingId, language: null },
+    });
+    updateProcessingRow({ recordingId, status: {
+      state: "preparing_local_moss", transcriptionBackend: "moss_local",
+    } });
+    next = await pending;
+    if (next.status) MOSS_SELECTIONS.delete(recordingId);
+    const stateName = updateProcessingRow(next);
+    if (next.errorCode) {
+      toast(next.errorCode === "remote_effect_already_started"
+        ? "云端任务已开始 · 未切换 MOSS，也未接管任务"
+        : next.errorCode === "publication_commit_in_progress"
+          ? "档案提交已开始 · 请继续核验，尚未取消"
+          : "MOSS 未完成 · 检查点保留，未切换其他路线");
+      return;
+    }
+    if (next.status?.transcriptionBackend !== "moss_local") return;
+    if (stateName === "complete") {
+      toast("MOSS 本地处理完成 · 正在打开档案");
+      setTimeout(() => location.reload(), 700);
+    } else if (activeProcessingStates.has(stateName)) {
+      setTimeout(() => processRecordingIds([recordingId]), 10000);
+    }
+  } catch (_) {
+    row.querySelector(".import-status").textContent = "MOSS 状态待确认 · 未切换其他路线";
+    row.classList.add("err");
+    // Selection may already be durable: never retry another route on an IPC
+    // failure. Refresh only the ledger, without dispatching any processing.
+    try {
+      const response = await TAURI.core.invoke("list_processing_recordings");
+      next = response.results?.find(result => result.recordingId === recordingId);
+      if (next?.status) { MOSS_SELECTIONS.delete(recordingId); updateProcessingRow(next); }
+    } catch (_) {}
+  } finally {
+    if (!selectionAttempted || next?.status) MOSS_SELECTIONS.delete(recordingId);
+    // Without a verified ledger read, an IPC error is not evidence that the
+    // route was never selected. Leave old competing actions disabled.
+    originalActions.forEach(action => { action.disabled = selectionAttempted && !next?.status; });
+  }
+}
+function initMossCandidateSetup() {
+  $("#mossCandidateRefresh").onclick = refreshMossCandidateModelStatus;
+  $("#mossModelBtn").onclick = async () => {
+    openMossModelDialog();
+    await refreshMossCandidateModelStatus();
+  };
+  $("#mossCandidateInstall").onclick = async () => {
+    if (!mossUiEnabled()) return;
+    const button = $("#mossCandidateInstall");
+    button.disabled = true;
+    $("#mossCandidateState").textContent = "准备下载";
+    MOSS_STATUS_TIMER = setTimeout(refreshMossCandidateModelStatus, 800);
+    try {
+      renderMossCandidateModelStatus(await TAURI.core.invoke("install_moss_pipeline_model_pack", {
+        request: { packId: "moss-full-local-v1" },
+      }));
+    } catch (_) {
+      await refreshMossCandidateModelStatus();
+      $("#mossCandidateState").textContent = "安装未完成 · 可安全重试";
+      button.textContent = "重试安装 MOSS";
+    } finally {
+      button.disabled = !MOSS_CANDIDATE_MODEL_STATUS?.supported
+        || !MOSS_CANDIDATE_MODEL_STATUS?.enabled || !MOSS_CANDIDATE_MODEL_STATUS?.memorySufficient;
+    }
+  };
+  $("#mossCandidateCancel").onclick = async () => {
+    const button = $("#mossCandidateCancel");
+    button.disabled = true;
+    try {
+      await TAURI.core.invoke("cancel_local_model_install", { request: { packId: "moss-full-local-v1" } });
+      $("#mossCandidateState").textContent = "正在安全停止下载";
+    } catch (_) { $("#mossCandidateState").textContent = "取消尚未确认"; }
+    finally { button.disabled = false; }
+  };
+  $("#mossCandidateRemove").onclick = async () => {
+    const removeShared = $("#mossRemoveShared").checked;
+    if (!confirm(removeShared
+      ? "同时移除 MOSS、共享的 SpeakerKit 和 Qwen 摘要模型？其他本地路线将需要重新安装共享模型。录音与档案不会删除。"
+      : "仅移除 MOSS 模型？共享的 SpeakerKit、Qwen 摘要模型，以及录音与档案都会保留。")) return;
+    const button = $("#mossCandidateRemove");
+    button.disabled = true;
+    try {
+      renderMossCandidateModelStatus(await TAURI.core.invoke("remove_moss_pipeline_model_pack", {
+        request: { packId: "moss-full-local-v1", removeShared },
+      }));
+      $("#mossRemoveShared").checked = false;
+      // Shared removals affect the older routes' readiness, never their choice.
+      if (removeShared) await refreshLocalModelStatus();
+    } catch (_) { $("#mossCandidateState").textContent = "移除未完成 · 模型可能正在使用"; }
+    finally { button.disabled = false; }
+  };
+}
+function openProcessingDialog(focusLocalModel = false) {
+  $("#processingError").textContent = "";
+  $("#processingDialog").showModal();
+  if (focusLocalModel && !$("#localPack").hidden) {
+    $("#localPack").scrollIntoView({ block: "center" });
+    $("#localPackInstall").focus();
+  } else {
+    $("#processingTosAk").focus();
+  }
+}
+async function startFullLocalProcessing(recordingId, button) {
+  if (!LOCAL_MODEL_STATUS?.installed) {
+    openProcessingDialog(true);
+    return;
+  }
+  if (button) button.disabled = true;
+  const row = ensureProcessingRow(recordingId, "完全离线处理");
+  row.dataset.processing = "true";
+  row.querySelector(".import-status").textContent = "本机转写 + 说话人 + 摘要 + 归档";
+  try {
+    const next = await TAURI.core.invoke("process_recording_with_local_models", {
+      request: { recordingId, language: null },
+    });
+    const stateName = updateProcessingRow(next);
+    if (stateName === "complete") {
+      toast("完全离线处理完成 · 正在打开本机档案");
+      setTimeout(() => location.reload(), 700);
+    } else if (stateName && !terminalProcessingStates.has(stateName)) {
+      setTimeout(() => processRecordingIds([recordingId]), 10000);
+    }
+  } catch (_) {
+    row.classList.add("err");
+    row.querySelector(".import-status").textContent = "本地模型未开始 · 录音仍安全保留";
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+async function startQwenCandidateProcessing(recordingId, button) {
+  if (!LOCAL_MODEL_STATUS?.installed || !QWEN_CANDIDATE_MODEL_STATUS?.installed) {
+    openProcessingDialog(true);
+    return;
+  }
+  if (button) button.disabled = true;
+  const row = ensureProcessingRow(recordingId, "Qwen 候选离线处理");
+  row.dataset.processing = "true";
+  row.querySelector(".import-status").textContent = "Qwen 转写 + 说话人 + 摘要 + 归档";
+  try {
+    const next = await TAURI.core.invoke("process_recording_with_qwen_candidate", {
+      request: { recordingId, language: null },
+    });
+    const stateName = updateProcessingRow(next);
+    if (stateName === "complete") {
+      toast("Qwen 候选离线处理完成 · 正在打开本机档案");
+      setTimeout(() => location.reload(), 700);
+    } else if (stateName && !terminalProcessingStates.has(stateName)) {
+      setTimeout(() => processRecordingIds([recordingId]), 10000);
+    }
+  } catch (_) {
+    row.classList.add("err");
+    row.querySelector(".import-status").textContent = "Qwen 候选未开始 · 录音仍安全保留";
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+async function acceptLocalTranscriptOnly(recordingId, button) {
+  if (!confirm("跳过说话人分离并重新运行当前本地转写模型？结果只保留匿名的 local_unknown 标签，不计为完整本地质量对等。")) return;
+  button.disabled = true;
+  try {
+    const next = await TAURI.core.invoke("accept_local_transcript_only", {
+      request: { recordingId },
+    });
+    updateProcessingRow(next);
+    const stateName = next.status?.state;
+    if (stateName && !terminalProcessingStates.has(stateName)) {
+      setTimeout(() => processRecordingIds([recordingId]), 10000);
+    }
+  } catch (_) {
+    toast("仅逐字稿重试未开始 · 录音仍安全保留");
+  } finally {
+    button.disabled = false;
+  }
+}
+async function takeOverWithFullLocal(recordingId, button) {
+  if (!LOCAL_MODEL_STATUS?.installed) {
+    openProcessingDialog(true);
+    return;
+  }
+  if (!confirm("妙记任务已经创建，可能已产生费用。确认由完整本地模型接管？选择会先持久化；妙记晚到结果不会覆盖或再次发布。")) return;
+  button.disabled = true;
+  const row = ensureProcessingRow(recordingId, "本地接管");
+  row.querySelector(".import-status").textContent = "正在持久化本地接管";
+  try {
+    const next = await TAURI.core.invoke("take_over_processing_with_local_models", {
+      request: { recordingId, language: null },
+    });
+    const stateName = updateProcessingRow(next);
+    if (stateName === "complete") {
+      toast("本地接管完成 · 妙记晚到结果已隔离");
+      setTimeout(() => location.reload(), 700);
+    } else if (stateName && !terminalProcessingStates.has(stateName)) {
+      setTimeout(() => processRecordingIds([recordingId]), 10000);
+    }
+  } catch (_) {
+    toast("本地接管未开始 · 原任务仍保持可恢复");
+  } finally {
+    button.disabled = false;
+  }
+}
+async function takeOverWithQwenCandidate(recordingId, button) {
+  if (!LOCAL_MODEL_STATUS?.installed || !QWEN_CANDIDATE_MODEL_STATUS?.installed) {
+    openProcessingDialog(true);
+    return;
+  }
+  if (!confirm("妙记任务已经创建，可能已产生费用。确认由 Qwen 候选完整离线路线接管？选择会先持久化；妙记晚到结果不会覆盖或再次发布。")) return;
+  button.disabled = true;
+  const row = ensureProcessingRow(recordingId, "Qwen 候选接管");
+  row.querySelector(".import-status").textContent = "正在持久化 Qwen 候选接管";
+  try {
+    const next = await TAURI.core.invoke("take_over_processing_with_qwen_candidate", {
+      request: { recordingId, language: null },
+    });
+    const stateName = updateProcessingRow(next);
+    if (stateName === "complete") {
+      toast("Qwen 候选接管完成 · 妙记晚到结果已隔离");
+      setTimeout(() => location.reload(), 700);
+    } else if (stateName && !terminalProcessingStates.has(stateName)) {
+      setTimeout(() => processRecordingIds([recordingId]), 10000);
+    }
+  } catch (_) {
+    toast("Qwen 候选接管未开始 · 原任务仍保持可恢复");
+  } finally {
+    button.disabled = false;
+  }
+}
+async function initProcessingSetup() {
+  initMossCandidateSetup();
+  for (const [id, route] of [["remoteProcessingDefault", "remote"], ["localPackDefault", "whisper_local"], ["mossPackDefault", "moss_local"]]) {
+    $("#" + id).onchange = () => saveProcessingPreference(route);
+  }
+  $("#processingPreferenceRetry").onclick = () => {
+    PROCESSING_PREFERENCE_PENDING = loadProcessingPreference();
+  };
+  $("#processingPreferenceSaveWhisper").onclick = () => saveProcessingPreference("whisper_local");
+  await ensureProcessingPreference();
+  const dialog = $("#processingDialog"), form = $("#processingForm");
+  const deleteButton = $("#processingDelete");
+  const fieldIds = ["processingTosAk", "processingTosSk", "processingTosBucket",
+    "processingTosRegion", "processingTosEndpoint", "processingVolcKey",
+    "processingGeminiKey", "processingGeminiModel", "processingGithubPat", "processingGithubRepo",
+    "processingR2Account", "processingR2Ak", "processingR2Sk", "processingR2Bucket"];
+  const clearSecrets = () => ["processingTosAk", "processingTosSk", "processingVolcKey",
+    "processingGeminiKey", "processingGithubPat", "processingR2Account",
+    "processingR2Ak", "processingR2Sk"]
+    .forEach(id => { $("#" + id).value = ""; });
+  $("#processingSetupBtn").onclick = () => openProcessingDialog(false);
+  $("#localModelBtn").onclick = () => openProcessingDialog(true);
+  $("#localPackInstall").onclick = async () => {
+    const button = $("#localPackInstall");
+    button.disabled = true;
+    $("#localPackState").textContent = "准备下载";
+    const polling = setInterval(refreshLocalModelStatus, 800);
+    try {
+      const status = await TAURI.core.invoke("install_local_model_pack", {
+        request: { packId: "full-local-v1" },
+      });
+      renderLocalModelStatus(status);
+      toast("完整离线模型已安装 · 说话人和本地摘要默认开启");
+    } catch (_) {
+      await refreshLocalModelStatus();
+      $("#localPackState").textContent = "安装未完成 · 可安全重试";
+    } finally {
+      clearInterval(polling);
+      button.disabled = false;
+    }
+  };
+  $("#localPackCancel").onclick = async () => {
+    $("#localPackCancel").disabled = true;
+    try {
+      await TAURI.core.invoke("cancel_local_model_install", {
+        request: { packId: "full-local-v1" },
+      });
+      $("#localPackState").textContent = "正在安全停止下载";
+    } catch (_) {
+      $("#localPackState").textContent = "取消尚未确认";
+    } finally {
+      $("#localPackCancel").disabled = false;
+    }
+  };
+  $("#localPackRemove").onclick = async () => {
+    if (!confirm(`移除约 ${formatModelBytes(LOCAL_MODEL_STATUS?.totalBytes)} 的本地模型？录音、逐字稿和归档不会删除。`)) return;
+    $("#localPackRemove").disabled = true;
+    try {
+      const status = await TAURI.core.invoke("remove_local_model_pack", {
+        request: { packId: "full-local-v1" },
+      });
+      renderLocalModelStatus(status);
+      toast("本地模型已移除");
+    } catch (_) {
+      $("#localPackState").textContent = "模型未能完整移除，请重试";
+    } finally {
+      $("#localPackRemove").disabled = false;
+    }
+  };
+  $("#qwenCandidateInstall").onclick = async () => {
+    const button = $("#qwenCandidateInstall");
+    button.disabled = true;
+    $("#qwenCandidateState").textContent = "准备下载";
+    const polling = setInterval(refreshQwenCandidateModelStatus, 800);
+    try {
+      const status = await TAURI.core.invoke("install_qwen_candidate_model_pack", {
+        request: { packId: "qwen-asr-candidate-v1" },
+      });
+      renderQwenCandidateModelStatus(status);
+      toast("Qwen 候选包已安装 · Whisper 默认保持不变");
+    } catch (_) {
+      await refreshQwenCandidateModelStatus();
+      $("#qwenCandidateState").textContent = "安装未完成 · 可安全重试";
+    } finally {
+      clearInterval(polling);
+      button.disabled = false;
+    }
+  };
+  $("#qwenCandidateCancel").onclick = async () => {
+    $("#qwenCandidateCancel").disabled = true;
+    try {
+      await TAURI.core.invoke("cancel_local_model_install", {
+        request: { packId: "qwen-asr-candidate-v1" },
+      });
+      $("#qwenCandidateState").textContent = "正在安全停止下载";
+    } catch (_) {
+      $("#qwenCandidateState").textContent = "取消尚未确认";
+    } finally {
+      $("#qwenCandidateCancel").disabled = false;
+    }
+  };
+  $("#qwenCandidateRemove").onclick = async () => {
+    if (!confirm(`移除约 ${formatModelBytes(QWEN_CANDIDATE_MODEL_STATUS?.totalBytes)} 的 Qwen 候选模型？录音、逐字稿、Whisper 模型和档案不会删除。`)) return;
+    $("#qwenCandidateRemove").disabled = true;
+    try {
+      const status = await TAURI.core.invoke("remove_qwen_candidate_model_pack", {
+        request: { packId: "qwen-asr-candidate-v1" },
+      });
+      renderQwenCandidateModelStatus(status);
+      toast("Qwen 候选包已移除");
+    } catch (_) {
+      $("#qwenCandidateState").textContent = "候选模型未能完整移除，请重试";
+    } finally {
+      $("#qwenCandidateRemove").disabled = false;
+    }
+  };
+  $("#processingCancel").onclick = () => {
+    clearSecrets();
+    dialog.close();
+  };
+  deleteButton.onclick = async () => {
+    if (!confirm("删除本机保存的全部处理与归档凭据？现有录音和归档不会被删除。")) return;
+    deleteButton.disabled = true;
+    $("#processingError").textContent = "";
+    const results = await Promise.allSettled([
+      TAURI.core.invoke("delete_processing_credentials"),
+      TAURI.core.invoke("delete_sync_credentials"),
+    ]);
+    clearSecrets();
+    deleteButton.disabled = false;
+    if (results.some(result => result.status === "rejected")) {
+      $("#processingError").textContent = "部分凭据未能删除，请重试";
+      return;
+    }
+    deleteButton.hidden = true;
+    $("#processingSetupBtn").hidden = false;
+    $("#captureState").textContent = "处理凭据已删除";
+    dialog.close();
+  };
+  form.onsubmit = async event => {
+    event.preventDefault();
+    const values = Object.fromEntries(fieldIds.map(id => [id, $("#" + id).value.trim()]));
+    if (Object.values(values).some(value => !value)) {
+      $("#processingError").textContent = "请填写全部处理配置";
+      return;
+    }
+    try {
+      await TAURI.core.invoke("save_sync_credentials", { setup: {
+        githubPat: values.processingGithubPat,
+        r2AccountId: values.processingR2Account,
+        r2AccessKeyId: values.processingR2Ak,
+        r2SecretAccessKey: values.processingR2Sk,
+        repo: values.processingGithubRepo,
+        bucket: values.processingR2Bucket,
+      }});
+      await TAURI.core.invoke("save_processing_credentials", { credentials: {
+        tosAccessKey: values.processingTosAk,
+        tosSecretKey: values.processingTosSk,
+        tosBucket: values.processingTosBucket,
+        tosRegion: values.processingTosRegion,
+        tosEndpoint: values.processingTosEndpoint,
+        volcApiKey: values.processingVolcKey,
+        geminiApiKey: values.processingGeminiKey,
+        geminiModel: values.processingGeminiModel,
+      }});
+      clearSecrets();
+      dialog.close();
+      deleteButton.hidden = false;
+      $("#processingSetupBtn").hidden = true;
+      $("#captureState").hidden = false;
+      $("#captureState").textContent = "App 内处理已配置";
+      processRecordingIds(pendingRecordingIds());
+    } catch (_) {
+      clearSecrets();
+      $("#processingError").textContent = "配置未保存，请检查格式与系统安全存储";
+    }
+  };
+  try {
+    const status = await TAURI.core.invoke("processing_credentials_status");
+    $("#processingSetupBtn").hidden = !!status.configured && !!status.archiveConfigured;
+    const hasProcessing = ["hasTosAccessKey", "hasVolcApiKey", "hasGeminiApiKey"]
+      .some(field => !!status[field]);
+    deleteButton.hidden = !hasProcessing && !status.archiveConfigured;
+  } catch (_) {
+    $("#processingSetupBtn").hidden = false;
+    deleteButton.hidden = true;
+  }
+  if (RUNTIME_FEATURES.localStt) {
+    $("#localPack").hidden = false;
+    $("#localModelBtn").hidden = false;
+    await refreshLocalModelStatus();
+  }
+  if (RUNTIME_FEATURES.localQwenCandidate) {
+    $("#qwenCandidatePack").hidden = false;
+    await refreshQwenCandidateModelStatus();
+  }
+  if (mossUiEnabled()) await refreshMossCandidateModelStatus();
+}
+
+/* Mobile capture is intentionally mic-only. Native plugins enforce visible-app
+   start and permissions again; JavaScript is just the control surface. */
+let nativeRecording = null;
+let recordingTimer = null;
+let nativeFinalizing = false;
+const nativeCommand = (command, args) => {
+  return TAURI.core.invoke(`mobile_${command}`, args || {});
+};
+const normalizedNativeState = status => String(status.state || status.phase || "idle").toLowerCase();
+const newRecordingId = () => {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 15) | 64;
+  bytes[8] = (bytes[8] & 63) | 128;
+  const hex = [...bytes].map(value => value.toString(16).padStart(2, "0"));
+  return `${hex.slice(0,4).join("")}-${hex.slice(4,6).join("")}-${hex.slice(6,8).join("")}-${hex.slice(8,10).join("")}-${hex.slice(10).join("")}`;
+};
+function formatRecordingClock(milliseconds) {
+  const seconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor(seconds % 3600 / 60);
+  const rest = seconds % 60;
+  return hours
+    ? `${String(hours).padStart(2,"0")}:${String(minutes).padStart(2,"0")}:${String(rest).padStart(2,"0")}`
+    : `${String(minutes).padStart(2,"0")}:${String(rest).padStart(2,"0")}`;
+}
+function recordingElapsed() {
+  if (!nativeRecording) return 0;
+  const end = nativeRecording.pausedAt || Date.now();
+  return end - nativeRecording.startedAt - nativeRecording.pausedTotal;
+}
+function renderRecordingClock() {
+  $("#recordingTime").textContent = formatRecordingClock(recordingElapsed());
+}
+function renderRecordingMeter(kind, rawLevel) {
+  const row = $(`#${kind}MeterRow`);
+  const meter = $(`#${kind}Meter`);
+  const output = $(`#${kind}MeterValue`);
+  const available = Number.isFinite(Number(rawLevel));
+  row.hidden = !available;
+  if (!available) return;
+  const level = Math.max(0, Math.min(1, Number(rawLevel)));
+  const decibels = level > 0 ? 20 * Math.log10(level) : -Infinity;
+  const visual = Number.isFinite(decibels) ? Math.max(0, Math.min(1, (decibels + 60) / 60)) : 0;
+  const percent = Math.round(visual * 100);
+  const label = Number.isFinite(decibels) ? `${Math.round(decibels)} dB` : "−∞ dB";
+  meter.querySelector("i").style.transform = `scaleX(${visual})`;
+  meter.setAttribute("aria-valuenow", String(percent));
+  meter.setAttribute("aria-valuetext", label);
+  output.textContent = label;
+}
+function renderRecordingMeters(status) {
+  renderRecordingMeter("microphone", status && status.microphoneLevel);
+  renderRecordingMeter("system", status && status.systemLevel);
+}
+function captureWarningText(status) {
+  const copy = {
+    macos_audio_startup_delay: "音频来源启动较慢，缺失区间已明确记录。",
+    macos_audio_discontinuity: "音频设备时间轴出现中断，缺口已记录。",
+    macos_system_silence: "所选来源持续静音，请检查播放状态。",
+    macos_microphone_device_changed: "所选麦克风已断开或发生变化。",
+    macos_capture_source_exited: "所选会议来源已经退出。",
+    crash_recovered: "已从上次关闭前安全落盘的分段恢复。",
+    source_lost: "所选录音来源已停止。",
+    process_restarted: "App 重启后已恢复安全落盘的分段。",
+    unclosed_segment_after_restart: "重启时未关闭的最后分段未计入已录时长。",
+    audio_interruption: "录音被系统音频事件中断。",
+    audio_route_changed: "音频路由发生变化，录音已中断。",
+    recording_storage_full: "可用存储空间不足，录音已中断。",
+  };
+  const notices = Array.isArray(status && status.warnings) ? status.warnings : [];
+  const details = notices.slice(-3).map(notice => {
+    const code = typeof notice === "string" ? notice : notice.code;
+    return copy[code] || (notice && notice.message) || "录音来源报告了需要检查的状态。";
+  });
+  if (Number(status && status.gapDurationMs) > 0) {
+    details.push(`已明确记录 ${formatRecordingClock(status.gapDurationMs)} 的未捕获区间。`);
+  }
+  return [...new Set(details)].join(" ");
+}
+function showRecordingSheet(status) {
+  $("#recordingSheet").hidden = false;
+  applyNativeStatus(status || { state: "recording" });
+  clearInterval(recordingTimer);
+  recordingTimer = setInterval(renderRecordingClock, 500);
+  renderRecordingClock();
+}
+function finishRecordingSheet(message) {
+  clearInterval(recordingTimer);
+  recordingTimer = null;
+  $("#recordingState").textContent = message;
+  $("#recordingState").classList.remove("recording-live");
+  localStorage.removeItem("echowall-native-recording");
+  setTimeout(() => {
+    $("#recordingSheet").hidden = true;
+    $("#recordingState").className = "recording-live";
+    $("#recordingState").textContent = "正在录音";
+    $("#captureState").textContent = "录音已保存在本机 · 等待整理";
+    $("#recordingSourceName").textContent = "设备麦克风";
+    renderRecordingMeters(null);
+    nativeRecording = null;
+  }, 1400);
+}
+async function queueCapturedRecording(result) {
+  const row = renderImportResult(result);
+  $("#importQueue").prepend(row);
+  if (RUNTIME_FEATURES.directProcessing) {
+    row.dataset.processingState = "queued";
+    await awaitLatestProcessingPreference();
+    if (!PROCESSING_PREFERENCE_KNOWN || NEW_RECORDING_ROUTE === null) {
+      row.querySelector(".import-status").textContent = "录音已留在本机 · 请选择处理方式";
+      row.querySelector(".import-detail").textContent = PROCESSING_PREFERENCE_KNOWN
+        ? "可选择 MOSS、Whisper 或云端处理；也可在设置中保存新录音偏好。"
+        : "处理偏好读取或保存未确认，不会自动上传。请重新读取偏好或明确选择处理方式。";
+    } else if (NEW_RECORDING_ROUTE === "moss_local") {
+      if (mossUiEnabled()) await startMossCandidateProcessing(result.recordingId, null, null, true);
+      else {
+        row.querySelector(".import-status").textContent = "MOSS 暂不可用 · 录音已留在本机";
+        row.querySelector(".import-detail").textContent = "恢复 MOSS 后再处理，或明确选择其他处理方式。不会自动上传。";
+      }
+    } else if (NEW_RECORDING_ROUTE === "whisper_local") {
+      if (RUNTIME_FEATURES.localStt && LOCAL_MODEL_STATUS?.installed) {
+        row.querySelector(".processing-row-actions")?.remove();
+        await startFullLocalProcessing(result.recordingId, null);
+      } else {
+        row.querySelector(".import-status").textContent = "Whisper 模型未就绪 · 录音已留在本机";
+        row.querySelector(".import-detail").textContent = "安装或恢复 Whisper 模型后再处理，或明确选择其他处理方式。不会自动上传。";
+      }
+    } else if (NEW_RECORDING_ROUTE === "remote") {
+      row.querySelector(".processing-row-actions")?.remove();
+      row.dataset.processing = "true";
+      row.querySelector(".import-status").textContent = "等待转写";
+      await processRecordingIds([result.recordingId], true);
+    }
+  }
+}
+async function finalizeNativeRecording(status) {
+  if (!nativeRecording || nativeFinalizing) return;
+  nativeFinalizing = true;
+  clearInterval(recordingTimer);
+  $("#recordingState").textContent = "正在整理分段";
+  $("#recordingPause").disabled = true;
+  $("#recordingStop").disabled = true;
+  try {
+    const response = await TAURI.core.invoke(
+      IS_ANDROID_APP || nativeRecording.pendingRecovery
+        ? "finalize_pending_mobile_capture"
+        : "finalize_mobile_capture",
+      IS_ANDROID_APP || nativeRecording.pendingRecovery
+        ? { request: { recordingId: nativeRecording.recordingId } }
+        : { request: { session: status } },
+    );
+    queueCapturedRecording({
+      sourcePath: "mobile-capture",
+      importedName: "App 内录音",
+      status: "native_ready",
+      recordingId: response.recordingId,
+      sha256: response.normalizedSha256,
+      sizeBytes: null,
+      codec: "pcm_s16le",
+      durationMs: response.durationMs,
+      error: null,
+    });
+    finishRecordingSheet("已安全保存");
+  } catch (_) {
+    $("#recordingState").textContent = "录音待恢复";
+    $("#recordingWarning").textContent = "已关闭分段仍在本机。重新打开 EchoWall 后可继续整理。";
+  } finally {
+    nativeFinalizing = false;
+    $("#recordingPause").disabled = false;
+    $("#recordingStop").disabled = false;
+  }
+}
+function applyNativeStatus(status) {
+  const state = normalizedNativeState(status);
+  renderRecordingMeters(status);
+  if (status && status.microphoneLabel) {
+    $("#recordingSourceName").textContent = status.sourceLabel
+      ? `${status.microphoneLabel} · ${status.sourceLabel}`
+      : status.microphoneLabel;
+  }
+  if (status && status.mode) {
+    $("#recordingScope").textContent = status.mode === "voice_memo"
+      ? "仅录制所选麦克风"
+      : status.mode === "meeting"
+        ? "麦克风 + 明确选择的会议来源"
+        : "麦克风 + 全部系统音频";
+  }
+  if (nativeRecording) {
+    nativeRecording.state = state;
+    if (IS_IOS_APP && state === "interrupted" &&
+        (status.warnings || []).includes("process_restarted")) {
+      nativeRecording.pendingRecovery = true;
+    }
+  }
+  const pause = $("#recordingPause");
+  pause.disabled = false;
+  $("#recordingWarning").textContent = "";
+  if (["paused"].includes(state)) {
+    $("#recordingState").textContent = "已暂停";
+    pause.textContent = "继续";
+  } else if (["interrupted", "source_lost"].includes(state)) {
+    $("#recordingState").textContent = "录音已中断";
+    const canResume = state === "interrupted" && IS_IOS_APP &&
+      nativeRecording && !nativeRecording.pendingRecovery;
+    $("#recordingWarning").textContent = canResume
+      ? "已关闭的分段仍安全保存在本机。检查音频路由后继续或停止。"
+      : "已关闭的分段仍安全保存在本机。请停止并保存；如需更换来源，请另开一段录音。";
+    pause.textContent = canResume ? "继续" : "无法继续";
+    pause.disabled = !canResume;
+  } else if (["stopped", "finalizing"].includes(state)) {
+    finalizeNativeRecording(status);
+  } else {
+    $("#recordingState").textContent = "正在录音";
+    pause.textContent = "暂停";
+  }
+  const detail = captureWarningText(status);
+  if (detail) {
+    const current = $("#recordingWarning").textContent;
+    $("#recordingWarning").textContent = current ? `${current} ${detail}` : detail;
+  }
+}
+async function pollNativeRecording() {
+  if (!nativeRecording) return;
+  try {
+    const status = nativeRecording.desktop
+      ? await TAURI.core.invoke("capture_status")
+      : await nativeCommand("status", { recordingId: nativeRecording.recordingId });
+    applyNativeStatus(status);
+  } catch (_) {
+    $("#recordingWarning").textContent = "暂时无法读取状态，录音分段仍保存在本机";
+  }
+  if (nativeRecording) setTimeout(pollNativeRecording, 1500);
+}
+async function startNativeRecording() {
+  const button = $("#recordBtn");
+  button.disabled = true;
+  $("#captureState").textContent = "检查麦克风权限";
+  try {
+    let preflight = await nativeCommand("preflight", {});
+    if (preflight.storageReady === false) throw new Error("storage");
+    const granted = IS_ANDROID_APP
+      ? preflight.canStart
+      : preflight.permission === "granted";
+    if (!granted) {
+      await nativeCommand("request_permissions", {});
+      preflight = await nativeCommand("preflight", {});
+      if (preflight.storageReady === false) throw new Error("storage");
+    }
+    const canStart = IS_ANDROID_APP
+      ? preflight.canStart
+      : preflight.permission === "granted" && preflight.supported;
+    if (!canStart) throw new Error("permission");
+    const recordingId = newRecordingId();
+    const result = await nativeCommand(
+      "start",
+      { recordingId, mode: "voice_memo" },
+    );
+    nativeRecording = {
+      recordingId: result.recordingId || result.sessionId || recordingId,
+      startedAt: Date.now(),
+      pausedAt: null,
+      pausedTotal: 0,
+    };
+    localStorage.setItem("echowall-native-recording", JSON.stringify(nativeRecording));
+    showRecordingSheet(result);
+    pollNativeRecording();
+  } catch (error) {
+    $("#captureState").textContent = error && error.message === "storage"
+      ? "可用存储空间不足 1 GB，无法开始两小时录音"
+      : "麦克风权限或录音服务不可用";
+  } finally {
+    button.disabled = false;
+  }
+}
+async function toggleNativePause() {
+  if (!nativeRecording) return;
+  const paused = $("#recordingPause").textContent === "继续";
+  try {
+    const status = nativeRecording.desktop
+      ? await TAURI.core.invoke(paused ? "resume_capture" : "pause_capture", { request: {} })
+      : await nativeCommand(paused ? "resume" : "pause", {
+          recordingId: nativeRecording.recordingId,
+        });
+    if (paused) {
+      nativeRecording.pausedTotal += Date.now() - (nativeRecording.pausedAt || Date.now());
+      nativeRecording.pausedAt = null;
+    } else nativeRecording.pausedAt = Date.now();
+    localStorage.setItem("echowall-native-recording", JSON.stringify(nativeRecording));
+    applyNativeStatus(status);
+  } catch (_) {
+    $("#recordingWarning").textContent = "录音控制未生效，请重试";
+  }
+}
+async function stopNativeRecording() {
+  if (!nativeRecording) return;
+  $("#recordingStop").disabled = true;
+  try {
+    if (nativeRecording.desktop) {
+      const result = await TAURI.core.invoke("stop_capture", { request: {} });
+      const envelope = result.envelope || {};
+      queueCapturedRecording({
+        sourcePath: envelope.normalized_audio || "desktop-capture",
+        importedName: "App 内录音",
+        status: "native_ready",
+        recordingId: result.recordingId,
+        sha256: envelope.normalized_sha256,
+        sizeBytes: null,
+        codec: envelope.tracks && envelope.tracks[0] ? envelope.tracks[0].codec : null,
+        durationMs: envelope.duration_ms,
+        error: null,
+      });
+      finishRecordingSheet("已安全保存");
+      return;
+    }
+    if (nativeRecording.pendingRecovery ||
+        (IS_ANDROID_APP && nativeRecording.state === "interrupted")) {
+      await finalizeNativeRecording({ state: "interrupted" });
+      return;
+    }
+    const status = await nativeCommand("stop", {
+      recordingId: nativeRecording.recordingId,
+    });
+    if (IS_IOS_APP) applyNativeStatus(status);
+    else setTimeout(pollNativeRecording, 250);
+  } catch (_) {
+    $("#recordingWarning").textContent = "停止指令未确认，录音状态仍在本机保留";
+  } finally {
+    $("#recordingStop").disabled = false;
+  }
+}
+async function adoptMobileItems(items) {
+  if (!items || !items.length) return [];
+  const response = await TAURI.core.invoke("adopt_mobile_imports", {
+    request: { items },
+  });
+  const queue = $("#importQueue");
+  const results = response.results || [];
+  for (const result of results) queue.prepend(renderImportResult(result));
+  const accepted = results.filter(result => result.status !== "error").length;
+  if (IS_IOS_APP || IS_ANDROID_APP) {
+    const acknowledged = items
+      .filter((item, index) => item.importId && results[index] && results[index].status !== "error")
+      .map(item => item.importId);
+    if (acknowledged.length) {
+      // Ack is cleanup only. If it is interrupted, the stable native item is
+      // replayed and Rust hash-dedup prevents another provider job.
+      await nativeCommand("acknowledge_shared_imports", { importIds: acknowledged }).catch(() => {});
+    }
+  }
+  $("#captureState").textContent = accepted
+    ? `${accepted} 个录音等待确认`
+    : "导入内容未通过检查";
+  return response.results || [];
+}
+async function restoreMobilePending() {
+  try {
+    if (IS_IOS_APP) {
+      const drained = await nativeCommand("drain_shared_imports", {});
+      await adoptMobileItems((drained.items || []).map(item => ({
+        sourcePath: item.path,
+        importId: item.importId,
+        displayName: item.displayName,
+        sizeBytes: item.sizeBytes,
+        state: "ready",
+      })));
+    } else if (IS_ANDROID_APP) {
+      const native = await nativeCommand("status", {});
+      await adoptMobileItems(native.imports || []);
+    }
+    const pending = await TAURI.core.invoke("list_pending_mobile_recordings");
+    for (const recordingId of pending.readyRecordingIds || []) {
+      if ($(`.import-item[data-recording-id="${CSS.escape(recordingId)}"]`)) continue;
+      $("#importQueue").prepend(renderImportResult({
+        sourcePath: "mobile-inbox",
+        importedName: "本机待处理录音",
+        status: "native_ready",
+        recordingId,
+        sha256: null,
+        sizeBytes: null,
+        codec: null,
+        durationMs: null,
+        error: null,
+      }));
+    }
+    for (const session of pending.nativeSessions || []) {
+      if ((IS_ANDROID_APP || IS_IOS_APP) &&
+          ["stopped", "interrupted", "finalizing"].includes(String(session.state).toLowerCase())) {
+        nativeRecording = {
+          recordingId: session.recordingId,
+          startedAt: Date.now(),
+          pausedAt: null,
+          pausedTotal: 0,
+          state: String(session.state).toLowerCase(),
+          pendingRecovery: true,
+        };
+        showRecordingSheet(session);
+      }
+    }
+  } catch (_) {
+    // A native queue is optional on a fresh install. Existing archive browsing
+    // must remain available when no capture/import work exists.
+  }
+}
+async function initNativeCapture() {
+  if (!IS_ANDROID_APP && !IS_IOS_APP) return false;
+  const button = $("#recordBtn");
+  button.disabled = false;
+  button.title = "仅录制设备麦克风";
+  button.onclick = startNativeRecording;
+  $("#recordingPause").onclick = toggleNativePause;
+  $("#recordingStop").onclick = stopNativeRecording;
+  const saved = localStorage.getItem("echowall-native-recording");
+  if (saved) {
+    try {
+      nativeRecording = JSON.parse(saved);
+      showRecordingSheet({ state: "recording" });
+      pollNativeRecording();
+    } catch (_) { localStorage.removeItem("echowall-native-recording"); }
+  } else if (IS_ANDROID_APP) {
+    try {
+      const status = await nativeCommand("status", {});
+      const state = normalizedNativeState(status);
+      if (["recording", "paused", "interrupted"].includes(state) && status.sessionId) {
+        nativeRecording = {
+          recordingId: status.sessionId,
+          startedAt: status.startedAtMs || Date.now(),
+          pausedAt: state === "paused" ? Date.now() : null,
+          pausedTotal: 0,
+        };
+        showRecordingSheet(status);
+        pollNativeRecording();
+      }
+    } catch (_) {}
+  }
+  return true;
+}
+
+let desktopCaptureSources = [];
+let desktopCapturePlatform = null;
+let desktopCaptureMode = "voice_memo";
+let desktopCapturePermissions = null;
+const captureOptions = kind => desktopCaptureSources.filter(
+  source => source.kind === kind && source.available
+);
+function fillCaptureSelect(select, sources) {
+  select.textContent = "";
+  for (const source of sources) {
+    const option = el("option", null, source.label);
+    option.value = source.id;
+    option.dataset.label = source.label;
+    option.dataset.kind = source.kind;
+    if (source.isDefault) option.selected = true;
+    select.append(option);
+  }
+}
+function selectedCaptureSource(select) {
+  const option = select.selectedOptions[0];
+  if (!option) return null;
+  const source = desktopCaptureSources.find(candidate =>
+    candidate.id === option.value && candidate.kind === option.dataset.kind);
+  return source || {
+    id: option.value,
+    label: option.dataset.label || option.textContent,
+    kind: option.dataset.kind,
+  };
+}
+const safeCaptureIcon = value => typeof value === "string"
+  && value.length <= 96 * 1024
+  && /^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(value);
+let captureSourcePreviewRevision = 0;
+function renderCaptureSourcePreview(source, meeting) {
+  const preview = $("#captureSourcePreview");
+  const revision = ++captureSourcePreviewRevision;
+  preview.hidden = !meeting || !source;
+  if (preview.hidden) return;
+  const label = String(source.label || "未命名 App");
+  $("#captureSourcePreviewName").textContent = label;
+  $("#captureSourcePreviewMeta").textContent = source.kind === "browser_application"
+    ? "整个浏览器应用 · 其他标签页可能被录入 · 音频活动将在开始后检测"
+    : "单个会议 App · 音频活动将在开始后检测";
+  const icon = $("#captureSourceIcon");
+  const fallback = $("#captureSourceFallback");
+  icon.removeAttribute("src");
+  icon.hidden = true;
+  fallback.hidden = false;
+  fallback.textContent = label.trim().slice(0, 1).toLocaleUpperCase() || "·";
+  if (!TAURI || !source.id) return;
+  TAURI.core.invoke("capture_source_icon", { request: { sourceId: source.id } })
+    .then(response => {
+      if (revision !== captureSourcePreviewRevision || !safeCaptureIcon(response.iconDataUrl)) return;
+      icon.src = response.iconDataUrl;
+      icon.hidden = false;
+      fallback.hidden = true;
+    })
+    .catch(() => {});
+}
+function requiredDesktopPermissions() {
+  return {
+    microphone: true,
+    screenAndSystemAudio: desktopCaptureMode !== "voice_memo",
+  };
+}
+function renderCapturePermissionActions() {
+  const requestButton = $("#capturePermissionRequest");
+  const settingsButton = $("#capturePermissionSettings");
+  const required = requiredDesktopPermissions();
+  const microphone = desktopCapturePermissions && desktopCapturePermissions.microphone;
+  const screen = desktopCapturePermissions && desktopCapturePermissions.screenAndSystemAudio;
+  const micMissing = required.microphone && microphone !== "granted";
+  const screenMissing = required.screenAndSystemAudio && screen !== "granted";
+  const promptable = desktopCapturePlatform === "macos" && (
+    (micMissing && microphone === "not_determined") ||
+    (screenMissing && screen === "denied")
+  );
+  const settingsNeeded = desktopCapturePlatform === "windows"
+    ? micMissing
+    : (micMissing && ["denied", "restricted"].includes(microphone)) ||
+      (screenMissing && ["denied", "restricted"].includes(screen));
+  requestButton.hidden = !promptable;
+  settingsButton.hidden = !settingsNeeded;
+  settingsButton.dataset.kind = micMissing
+    ? "microphone"
+    : "screen_and_system_audio";
+  const sourceMissing = desktopCaptureMode === "meeting" &&
+    !selectedCaptureSource($("#captureSource"));
+  const outputMissing = desktopCaptureMode === "system_capture" &&
+    !selectedCaptureSource($("#captureOutput"));
+  $("#captureForm button[type='submit']").disabled = micMissing || screenMissing ||
+    !selectedCaptureSource($("#captureMic")) || sourceMissing || outputMissing;
+  if (settingsNeeded) {
+    $("#captureDialogError").textContent = micMissing
+      ? "麦克风权限未开启；请在系统设置中允许 EchoWall 使用麦克风。"
+      : "屏幕录制权限未开启；请在系统设置中允许 EchoWall 捕获所选来源。";
+  } else if (promptable) {
+    $("#captureDialogError").textContent = "点击授权后，系统才会显示权限请求。";
+  } else if (desktopCapturePermissions) {
+    $("#captureDialogError").textContent = "";
+  }
+}
+async function refreshDesktopCaptureSources() {
+  desktopCapturePermissions = await TAURI.core.invoke("capture_permissions");
+  const response = await TAURI.core.invoke("capture_sources");
+  desktopCaptureSources = response.sources || [];
+  fillCaptureSelect($("#captureMic"), captureOptions("microphone"));
+  fillCaptureSelect(
+    $("#captureSource"),
+    desktopCaptureSources.filter(source =>
+      ["native_application", "browser_application"].includes(source.kind)
+        && source.available
+        && (source.kind !== "browser_application" || RUNTIME_FEATURES.browserCapture)),
+  );
+  fillCaptureSelect($("#captureOutput"), captureOptions("system_output"));
+  renderDesktopCaptureMode();
+}
+function renderDesktopCaptureMode() {
+  document.querySelectorAll("#captureModes .mode-option").forEach(button =>
+    button.classList.toggle("on", button.dataset.mode === desktopCaptureMode));
+  const meeting = desktopCaptureMode === "meeting";
+  const system = desktopCaptureMode === "system_capture";
+  $("#captureSourceField").hidden = !meeting;
+  $("#captureOutputField").hidden = !system;
+  const selected = selectedCaptureSource($("#captureSource"));
+  renderCaptureSourcePreview(selected, meeting);
+  const browser = meeting && selected && selected.kind === "browser_application";
+  $("#captureScopeConfirm").hidden = !(browser || system);
+  $("#captureScopeText").textContent = system
+    ? "我确认将录制全部系统音频；这比 Meeting 范围更广。"
+    : "我确认将录制这个浏览器的全部声音，其他正在播放的 tab 也可能被录到。";
+  $("#captureScopeCheck").checked = false;
+  renderCapturePermissionActions();
+}
+function desktopCapturePlan() {
+  const microphone = selectedCaptureSource($("#captureMic"));
+  if (!microphone) throw new Error("没有可用麦克风");
+  let target;
+  let wholeBrowser = false;
+  if (desktopCaptureMode === "voice_memo") {
+    target = { kind: "voice_memo", microphone };
+  } else if (desktopCaptureMode === "meeting") {
+    const selected = selectedCaptureSource($("#captureSource"));
+    if (!selected) throw new Error("请选择会议 App 或浏览器");
+    wholeBrowser = selected.kind === "browser_application";
+    target = {
+      kind: "meeting",
+      microphone,
+      source: {
+        kind: wholeBrowser ? "whole_browser" : "native_application",
+        id: selected.id,
+        label: selected.label,
+      },
+    };
+  } else {
+    const output = selectedCaptureSource($("#captureOutput"));
+    if (!output) throw new Error("没有可用系统输出");
+    target = { kind: "system_capture", microphone, output };
+  }
+  const needsScopeCheck = wholeBrowser || desktopCaptureMode === "system_capture";
+  if (needsScopeCheck && !$("#captureScopeCheck").checked) {
+    throw new Error("请先确认录音范围");
+  }
+  return {
+    mode: desktopCaptureMode,
+    platform: desktopCapturePlatform,
+    target,
+    consent: {
+      microphone: true,
+      selected_source: desktopCaptureMode === "meeting",
+      whole_browser_warning: wholeBrowser,
+      all_system_audio: desktopCaptureMode === "system_capture",
+    },
+  };
+}
+async function openDesktopCaptureDialog() {
+  const dialog = $("#captureDialog");
+  $("#captureDialogError").textContent = "读取设备和 App…";
+  dialog.showModal();
+  try {
+    await refreshDesktopCaptureSources();
+  } catch (_) {
+    $("#captureDialogError").textContent = "无法读取录音设备；检查麦克风与屏幕录制权限。";
+  }
+}
+async function startDesktopCapture() {
+  const plan = desktopCapturePlan();
+  const preflight = await TAURI.core.invoke("capture_preflight", {
+    request: { plan },
+  });
+  const permissionsReady = preflight.microphone_permission === "granted" && (
+    plan.mode === "voice_memo" || preflight.system_audio_permission === "granted"
+  );
+  if (!preflight.backend_available || !permissionsReady ||
+      !["available", "silent"].includes(preflight.selected_source)) {
+    desktopCapturePermissions = {
+      microphone: preflight.microphone_permission,
+      screenAndSystemAudio: preflight.system_audio_permission,
+    };
+    renderCapturePermissionActions();
+    throw new Error("权限或所选来源尚未就绪");
+  }
+  const status = await TAURI.core.invoke("start_capture", { request: { plan } });
+  nativeRecording = {
+    recordingId: status.recordingId,
+    startedAt: Date.now(),
+    pausedAt: null,
+    pausedTotal: 0,
+    desktop: true,
+    state: "recording",
+  };
+  localStorage.setItem("echowall-native-recording", JSON.stringify(nativeRecording));
+  $("#recordingScope").textContent = plan.mode === "voice_memo"
+    ? "仅录制所选麦克风"
+    : plan.mode === "meeting"
+      ? "麦克风 + 明确选择的会议来源"
+      : "麦克风 + 全部系统音频";
+  const selectedLabel = plan.mode === "meeting"
+    ? plan.target.source.label
+    : plan.mode === "system_capture"
+      ? plan.target.output.label
+      : null;
+  $("#recordingSourceName").textContent = selectedLabel
+    ? `${plan.target.microphone.label} · ${selectedLabel}`
+    : plan.target.microphone.label;
+  showRecordingSheet(status);
+  pollNativeRecording();
+}
+async function initDesktopCapture() {
+  try {
+    const capabilities = await TAURI.core.invoke("capture_capabilities");
+    if (!capabilities.backendAvailable || !capabilities.platform) {
+      $("#recordBtn").title = "此版本暂不支持录音，可导入已有录音";
+      $("#captureState").textContent = RUNTIME_FEATURES.audioImport
+        ? "录音暂不可用 · 可导入文件" : "此版本暂不支持添加录音";
+      return;
+    }
+    desktopCapturePlatform = capabilities.platform;
+    const meetingMode = $('#captureModes .mode-option[data-mode="meeting"]');
+    meetingMode.disabled = capabilities.meetingAvailable === false;
+    if (meetingMode.disabled) {
+      meetingMode.querySelector("span").textContent = "指定 App · 需要 macOS 14.2+";
+    }
+    const button = $("#recordBtn");
+    button.disabled = false;
+    button.title = "选择 Voice Memo、Meeting 或 System Capture";
+    button.onclick = openDesktopCaptureDialog;
+    $("#recordingPause").onclick = toggleNativePause;
+    $("#recordingStop").onclick = stopNativeRecording;
+    document.querySelectorAll("#captureModes .mode-option").forEach(mode => {
+      mode.onclick = () => {
+        desktopCaptureMode = mode.dataset.mode;
+        renderDesktopCaptureMode();
+      };
+    });
+    $("#captureSource").onchange = renderDesktopCaptureMode;
+    $("#capturePermissionRequest").onclick = async () => {
+      const button = $("#capturePermissionRequest");
+      button.disabled = true;
+      $("#captureDialogError").textContent = "等待系统授权…";
+      try {
+        const required = requiredDesktopPermissions();
+        await TAURI.core.invoke("capture_request_permissions", { request: required });
+        await refreshDesktopCaptureSources();
+        const stillMissing = desktopCapturePermissions.microphone !== "granted" ||
+          (required.screenAndSystemAudio &&
+           desktopCapturePermissions.screenAndSystemAudio !== "granted");
+        $("#captureDialogError").textContent = stillMissing
+          ? "授权尚未生效；可打开系统设置，Screen Recording 变更后可能需要重启 App。"
+          : "权限已就绪，请确认来源后开始录音。";
+      } catch (_) {
+        $("#captureDialogError").textContent = "授权没有完成；请重试或打开系统设置。";
+      } finally {
+        button.disabled = false;
+      }
+    };
+    $("#capturePermissionSettings").onclick = async () => {
+      const kind = $("#capturePermissionSettings").dataset.kind;
+      try {
+        await TAURI.core.invoke("open_capture_permission_settings", {
+          request: { kind },
+        });
+        $("#captureDialogError").textContent = "系统设置已打开；修改后返回 EchoWall 并重新刷新来源。";
+      } catch (_) {
+        $("#captureDialogError").textContent = "无法打开系统设置。";
+      }
+    };
+    $("#captureCancel").onclick = () => $("#captureDialog").close();
+    $("#captureForm").onsubmit = async event => {
+      event.preventDefault();
+      $("#captureDialogError").textContent = "正在确认权限和来源…";
+      try {
+        await startDesktopCapture();
+        $("#captureDialog").close();
+      } catch (error) {
+        $("#captureDialogError").textContent = error.message || "无法开始录音";
+      }
+    };
+    try {
+      const current = await TAURI.core.invoke("capture_status");
+      if (current.recordingId && current.phase) {
+        nativeRecording = {
+          recordingId: current.recordingId,
+          startedAt: Date.now() - (current.durationMs || 0),
+          pausedAt: current.phase === "paused" ? Date.now() : null,
+          pausedTotal: 0,
+          desktop: true,
+          state: current.phase,
+        };
+        showRecordingSheet(current);
+        pollNativeRecording();
+      }
+    } catch (_) {}
+  } catch (_) {
+    $("#recordBtn").title = "录音暂不可用，请重试或更新 App";
+    $("#captureState").textContent = RUNTIME_FEATURES.audioImport
+      ? "录音暂不可用 · 可导入文件" : "此版本暂不支持添加录音";
+  }
+}
+async function drainImportBatches() {
+  if (importBusy || !importBatches.length) return;
+  importBusy = true;
+  const button = $("#importBtn"), stateLabel = $("#captureState"), queue = $("#importQueue");
+  button.disabled = true;
+  while (importBatches.length) {
+    const paths = importBatches.shift();
+    stateLabel.textContent = `正在检查 ${paths.length} 个文件`;
+    try {
+      const response = await TAURI.core.invoke("import_audio_files", { request: { paths } });
+      for (const result of response.results || []) queue.prepend(renderImportResult(result));
+      const ok = (response.results || []).filter(r => r.status !== "error").length;
+      const failed = (response.results || []).length - ok;
+      stateLabel.textContent = failed ? `${ok} 个待确认 · ${failed} 个未导入` : `${ok} 个等待确认`;
+    } catch (_) {
+      const failed = renderImportResult({
+        sourcePath: `${paths.length} 个文件`, status: "error",
+        error: { message: "导入边界暂时不可用，请重新选择" },
+      });
+      queue.prepend(failed);
+      stateLabel.textContent = "导入未完成";
+    }
+  }
+  button.disabled = false;
+  importBusy = false;
+}
+function importPaths(paths) {
+  const supported = (paths || []).filter(path => /\.(m4a|mp3|wav)$/i.test(String(path)));
+  if (!supported.length) {
+    $("#captureState").textContent = "请选择 m4a、mp3 或 wav";
+    return;
+  }
+  importBatches.push(supported);
+  drainImportBatches();
+}
+async function initCaptureTools() {
+  if (!TAURI || !TAURI.core || !TAURI.core.invoke) return;
+  try {
+    RUNTIME_FEATURES = await TAURI.core.invoke("runtime_features");
+  } catch (_) {}
+  const tools = $("#captureTools");
+  tools.hidden = false;
+  await initProcessingSetup();
+  await restoreProcessingQueue();
+  const dialogOpen = TAURI.dialog && TAURI.dialog.open
+    ? options => TAURI.dialog.open(options)
+    : options => TAURI.core.invoke("plugin:dialog|open", { options });
+  const importButton = $("#importBtn");
+  if (!RUNTIME_FEATURES.audioImport) {
+    importButton.disabled = true;
+    importButton.title = "此版本已停用新文件导入";
+  }
+  if (!RUNTIME_FEATURES.directProcessing) {
+    $("#processingSetupBtn").hidden = true;
+    $("#captureState").textContent = "直接处理已停用 · 本机录音仍可导出";
+  }
+  if (IS_APP_MOBILE) {
+    if (!IS_ANDROID_APP && !IS_IOS_APP) {
+      tools.hidden = true;
+      return;
+    }
+    if (RUNTIME_FEATURES.recording) await initNativeCapture();
+    else {
+      $("#recordBtn").disabled = true;
+      $("#recordBtn").title = "此版本已停用新录音";
+    }
+    if (!RUNTIME_FEATURES.audioImport) {
+      // Existing/pending recordings still restore below.
+    } else if (IS_ANDROID_APP) {
+      importButton.onclick = async () => {
+        $("#captureState").textContent = "正在检查文件";
+        try {
+          const result = await nativeCommand("open_audio_picker", {});
+          await adoptMobileItems([result]);
+        } catch (_) {
+          $("#captureState").textContent = "未导入文件";
+        }
+      };
+    } else if (IS_IOS_APP) {
+      importButton.onclick = async () => {
+        const picked = await nativeCommand("open_audio_picker", {}).catch(() => null);
+        if (!picked) return;
+        await adoptMobileItems(picked.items || [picked]).catch(() => {
+          $("#captureState").textContent = "未导入文件";
+        });
+      };
+      importButton.title = "也可从语音备忘录的分享菜单发送到 EchoWall";
+    } else {
+      importButton.disabled = true;
+      importButton.title = "请从文件或语音备忘录的分享菜单发送到 EchoWall";
+    }
+    restoreMobilePending();
+    return;
+  }
+  if (!CAN_EDIT) return;
+  if (RUNTIME_FEATURES.recording) await initDesktopCapture();
+  else {
+    $("#recordBtn").disabled = true;
+    $("#recordBtn").title = "此版本已停用新录音";
+  }
+  if (!RUNTIME_FEATURES.audioImport) {
+    // Keep drag/drop and picker handlers unregistered.
+  } else {
+    importButton.onclick = async () => {
+      try {
+        const picked = await dialogOpen({
+          multiple: true,
+          directory: false,
+          title: "导入录音",
+          filters: [{ name: "录音", extensions: ["m4a", "mp3", "wav"] }],
+        });
+        if (picked) importPaths(Array.isArray(picked) ? picked : [picked]);
+      } catch (_) {
+        $("#captureState").textContent = "无法打开文件选择器，请重试或拖入文件";
+      }
+    };
+  }
+
+  if (!RUNTIME_FEATURES.audioImport) return;
+  const currentWindow = TAURI.webviewWindow && TAURI.webviewWindow.getCurrentWebviewWindow
+    ? TAURI.webviewWindow.getCurrentWebviewWindow() : null;
+  if (currentWindow && currentWindow.onDragDropEvent) {
+    currentWindow.onDragDropEvent(event => {
+      const payload = event.payload || {};
+      $("#dropMask").hidden = payload.type !== "over";
+      if (payload.type === "drop") importPaths(payload.paths || []);
+    }).catch(() => {});
+  }
+}
 
 /* ---------- theme (manual override beats system, persisted) ---------- */
 const THEME_KEY = "echowall-theme";
@@ -461,7 +2950,7 @@ function renderSide() {
           if (state.sel) select(state.sel);
         };
         pick.onchange = () => {
-          fetch("/api/speaker-colors", {
+          fetch("api/speaker-colors", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: label, color: pick.value }),
@@ -479,10 +2968,11 @@ function renderSide() {
   }
   const total = DATA.entries.reduce((a, e) => a + (e.duration || 0), 0);
   const night = DATA.entries.filter(e => { const h = +e.time.slice(0,2); return h < 8; }).length;
+  const nightPercent = DATA.entries.length ? Math.round(night / DATA.entries.length * 100) : 0;
   $("#stats").innerHTML = "";
   $("#stats").append(
     Object.assign(el("div"), {innerHTML: `共 <b>${(total / 3600).toFixed(1)}</b> 小时`}),
-    Object.assign(el("div"), {innerHTML: `<b>${Math.round(night / DATA.entries.length * 100)}%</b> 录于凌晨`}),
+    Object.assign(el("div"), {innerHTML: `<b>${nightPercent}%</b> 录于凌晨`}),
   );
 }
 
@@ -518,7 +3008,7 @@ function renderList() {
     top.append(el("span", "t", e.time), el("span", "ti", e.ai_title));
     const pile = facepileEl(e);
     if (pile) top.append(pile);
-    if (e.audio) {
+    if (audioFor(e)) {
       const dur = el("span", "dur " + durClass(e.duration || 0), fmtDurCN(e.duration));
       dur.title = fmtDur(e.duration);
       top.append(dur);
@@ -532,6 +3022,7 @@ function renderList() {
 /* ---------- detail + player ---------- */
 const audio = $("#audio");
 let playing = null;
+const audioFor = entry => IS_APP_MOBILE && entry.r2_audio ? entry.r2_audio : entry.audio;
 function select(key, opts) {
   state.sel = key;
   // Switching to a different recording stops the previous one — otherwise
@@ -561,29 +3052,82 @@ function select(key, opts) {
   head.append(el("div", "d-cat", e.category));
   if (CAN_EDIT) {
     const del = el("button", "del-btn", "删除");
+    let deleteMode = "idle";
+    let deleteTimer = null;
+    const resetDelete = () => {
+      if (deleteTimer) clearTimeout(deleteTimer);
+      deleteTimer = null;
+      deleteMode = "idle";
+      del.classList.remove("armed");
+      del.disabled = false;
+      del.textContent = "删除";
+    };
     del.onclick = () => {
-      if (!del.classList.contains("armed")) {
+      if (deleteMode === "idle") {
+        deleteMode = "full";
         del.classList.add("armed");
-        del.textContent = "确认删除?(笔记+音频+附注)";
-        setTimeout(() => { del.classList.remove("armed"); del.textContent = "删除"; }, 4000);
+        del.textContent = "确认删除?(笔记+附注+可验证音频)";
+        deleteTimer = setTimeout(resetDelete, 4000);
         return;
       }
-      del.disabled = true; del.textContent = "删除中…";
-      fetch("/api/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: e.key }),
-      }).then(r => { if (!r.ok) return r.text().then(t => { throw new Error(t); }); })
-        .then(() => {
+      const retainUnverifiedAudio = deleteMode === "legacy-partial";
+      if (deleteTimer) clearTimeout(deleteTimer);
+      deleteTimer = null;
+      const performDelete = (retainUnverifiedAudio) => {
+        del.disabled = true; del.textContent = "删除中…";
+        fetch("api/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: e.key, retainUnverifiedAudio }),
+        }).then(async r => {
+          if (r.ok) return r.json();
+          const error = new Error(await r.text()); error.status = r.status; throw error;
+        }).then(result => {
           DATA.entries = DATA.entries.filter(x => x.key !== e.key);
           state.sel = null;
           $("#detail").textContent = "";
-          $("#detail").append(el("div", "placeholder", "已删除"));
+          const message = result.r2 === "retained-unverified-legacy"
+            ? "笔记与本地文件已删除；旧版云端音频因无所有权证明而保留"
+            : "已删除";
+          $("#detail").append(el("div", "placeholder", message));
           renderSide(); renderList();
         })
-        .catch(err => { del.disabled = false; del.textContent = "删除失败: " + err.message.slice(0, 60); });
+        .catch(err => {
+          del.disabled = false;
+          if (err.status === 409 && err.message.includes("legacy audio")) {
+            deleteMode = "legacy-partial";
+            del.classList.add("armed");
+            del.textContent = "再次确认: 仅删笔记，本次保留旧云端音频";
+            deleteTimer = setTimeout(resetDelete, 8000);
+          } else {
+            deleteMode = "idle";
+            del.textContent = "删除失败: " + err.message.slice(0, 60);
+          }
+        });
+      };
+      performDelete(retainUnverifiedAudio);
     };
     head.append(del);
+  }
+  if ((CAN_EDIT || IS_APP_MOBILE) && e.recording_id) {
+    if (RUNTIME_FEATURES.directProcessing) {
+      if (!IS_APP_MOBILE && !e.r2_audio && e.audio) {
+        const backupButton = el("button", "del-btn", "备份到私有云");
+        backupButton.onclick = () => backUpLocalRecordingToCloud(e.recording_id, backupButton);
+        head.append(backupButton);
+      }
+      const reprocessButton = el("button", "del-btn", "重新处理");
+      reprocessButton.onclick = () => startReprocess(e.recording_id, reprocessButton);
+      head.append(reprocessButton);
+    }
+    const exportButton = el("button", "del-btn", "导出原录音");
+    exportButton.onclick = async () => {
+      exportButton.disabled = true;
+      try { await exportRecordingOriginal(e.recording_id); }
+      catch (_) { toast("导出失败 · 本机原录音可能已按保留策略清理"); }
+      finally { exportButton.disabled = false; }
+    };
+    head.append(exportButton);
   }
   pad.append(head, el("h2", "d-title", e.ai_title),
              el("div", "d-meta", `${e.date} ${e.time} · ${e.original || "原始文件已删除"}${e.duration ? " · " + fmtDur(e.duration) : ""}`));
@@ -604,7 +3148,7 @@ function select(key, opts) {
     pad.append(row);
   }
 
-  if (e.audio) pad.append(buildPlayer(e));
+  if (audioFor(e)) pad.append(buildPlayer(e));
 
   const tabs = el("div", "tabs");
   const body = el("div", "tab-body");
@@ -658,8 +3202,7 @@ function buildAttachTab(e, body) {
     if ((e.attachments || []).length === 1) box.open = true;
     box.append(el("summary", null, att.name));
     const md = el("div", "md-body");
-    md.innerHTML = window.marked ? marked.parse(att.content) : "";
-    if (!window.marked) md.textContent = att.content;
+    md.append(safeMarkdownFragment(att.content));
     box.append(md);
     body.append(box);
   }
@@ -683,7 +3226,7 @@ function buildAttachEditor(e) {
   const file = el("input"); file.type = "file"; file.accept = ".md,.txt"; file.hidden = true;
   const post = (attName, content) => {
     if (!content.trim()) return;
-    fetch("/api/attachments", {
+    fetch("api/attachments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ key: e.key, name: attName || "附注", content }),
@@ -708,6 +3251,7 @@ function buildAttachEditor(e) {
 }
 
 function buildPlayer(e) {
+  const audioPath = audioFor(e);
   const box = el("div", "player");
   const btn = el("button", "play-btn", "▶");
   btn.setAttribute("aria-label", "播放");
@@ -716,37 +3260,37 @@ function buildPlayer(e) {
   const time = el("span", "ptime", "0:00");
   box.append(btn, seek, time);
   if (IS_APP_MOBILE) {
-    const pin = el("button", "pin-btn" + (PINNED.has(e.audio) ? " on" : ""), "↓");
+    const pin = el("button", "pin-btn" + (PINNED.has(audioPath) ? " on" : ""), "↓");
     const label = on => {
       pin.classList.toggle("on", on);
       pin.textContent = on ? "✓" : "↓";
       pin.setAttribute("aria-label", on ? "已离线保存,点击移除" : "离线保存音频");
       pin.title = on ? "已离线" : "离线保存";
     };
-    label(PINNED.has(e.audio));
+    label(PINNED.has(audioPath));
     pin.onclick = async () => {
-      const on = !PINNED.has(e.audio);
+      const on = !PINNED.has(audioPath);
       pin.textContent = "…";
       try {
-        const r = await fetch("/api/sync/pin", {
+        const r = await fetch("api/sync/pin", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ rel: e.audio, on }),
+          body: JSON.stringify({ rel: audioPath, on }),
         });
         if (!(await r.json()).ok) throw new Error();
-        on ? PINNED.add(e.audio) : PINNED.delete(e.audio);
+        on ? PINNED.add(audioPath) : PINNED.delete(audioPath);
         label(on);
         toast(on ? "已离线保存" : "已移除离线音频");
       } catch (_) { label(!on); toast("离线保存失败 · 重试"); }
     };
     box.append(pin);
     // Offline with nothing local: a dead play button needs to say why.
-    if (!navigator.onLine && !PINNED.has(e.audio)) {
+    if (!navigator.onLine && !PINNED.has(audioPath)) {
       btn.disabled = true;
       time.textContent = "离线未缓存";
     }
   }
   const load = () => {
-    if (playing !== e.key) { audio.src = e.audio; playing = e.key; }
+    if (playing !== e.key) { audio.src = audioPath; playing = e.key; }
   };
   btn.onclick = () => { load(); audio.paused ? audio.play() : audio.pause(); };
   seek.onclick = ev => {
@@ -783,7 +3327,7 @@ function buildTranscript(e) {
       const sec = (+m[1]) * 3600 + (+m[2]) * 60 + (+m[3]);
       const label = raw.slice(0, raw.indexOf("]") + 1);
       let ts;
-      if (e.audio) {
+      if (audioFor(e)) {
         ts = el("button", "ts", label);
         ts.title = "跳到这里播放";
         ts.onclick = () => { const p = $(".player"); if (p && p.seekTo) p.seekTo(sec); };
@@ -840,7 +3384,7 @@ function openSpeakerEditor(e, slot, anchor) {
 
 function applySpeakers(targets, slot, name, pop) {
   const updates = targets.map(t => ({ key: t.key, speakers: { [slot]: name } }));
-  fetch("/api/speakers", {
+  fetch("api/speakers", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ updates }),
@@ -960,12 +3504,14 @@ function toast(msg) {
 if (IS_APP_MOBILE) {
   const pill = $("#syncPill");
   pill.hidden = false;
+  pill.className = "busy";
+  pill.textContent = "连接档案…";
   const ago = iso => {
     if (!iso) return "";
     const m = Math.round((Date.now() - new Date(iso)) / 60000);
     return m < 1 ? "刚刚" : m < 60 ? `${m} 分钟前` : m < 1440 ? `${Math.round(m / 60)} 小时前` : `${Math.round(m / 1440)} 天前`;
   };
-  fetch("/api/sync/pins").then(r => r.json()).then(j => {
+  fetch("api/sync/pins").then(r => r.json()).then(j => {
     (j.pins || []).forEach(p => PINNED.add(p));
     if (state.sel) select(state.sel, { keepNav: true });
   }).catch(() => {});
@@ -981,7 +3527,7 @@ if (IS_APP_MOBILE) {
   };
   const tick = async () => {
     try {
-      const j = await (await fetch("/api/sync/status", { cache: "no-store" })).json();
+      const j = await (await fetch("api/sync/status", { cache: "no-store" })).json();
       render(j);
       if (j.state === "syncing") { wasSyncing = true; setTimeout(tick, 1500); return; }
       if (wasSyncing) {
@@ -1006,10 +3552,10 @@ if (IS_APP_MOBILE) {
     } catch (_) {}
   };
   pill.onclick = async () => {
-    const j = await (await fetch("/api/sync/status", { cache: "no-store" })).json().catch(() => null);
-    if (j && (j.state === "unauthorized" || j.state === "no-tokens")) { location = "/setup"; return; }
+    const j = await (await fetch("api/sync/status", { cache: "no-store" })).json().catch(() => null);
+    if (j && (j.state === "unauthorized" || j.state === "no-tokens")) { location = "setup"; return; }
     if (j && j.state === "syncing") return;
-    await fetch("/api/sync/refresh", { method: "POST" }).catch(() => {});
+    await fetch("api/sync/refresh", { method: "POST" }).catch(() => {});
     tick();
   };
   tick();
@@ -1018,6 +3564,7 @@ if (IS_APP_MOBILE) {
   audio.addEventListener("error", () => { if (audio.src) toast("音频拉取失败 · 重试"); });
 }
 
+initCaptureTools();
 renderSide();
 renderList();
 </script>

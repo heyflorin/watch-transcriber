@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-take-over-processing-with-local-models"
+description = "Enables the take_over_processing_with_local_models command without any pre-configured scope."
+commands.allow = ["take_over_processing_with_local_models"]
+
+[[permission]]
+identifier = "deny-take-over-processing-with-local-models"
+description = "Denies the take_over_processing_with_local_models command without any pre-configured scope."
+commands.deny = ["take_over_processing_with_local_models"]

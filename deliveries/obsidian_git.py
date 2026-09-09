@@ -40,8 +40,8 @@ def deliver(note: dict) -> bool:
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             if resp.status in (200, 201):
-                print(f"[delivery:obsidian_git] committed to {repo}/{path}")
+                print("[delivery:obsidian_git] note committed")
                 return True
-    except urllib.error.HTTPError as e:
-        print(f"[delivery:obsidian_git] error {e.code}: {e.read().decode()[:200]}")
+    except urllib.error.HTTPError:
+        print("[delivery:obsidian_git] request failed")
     return False

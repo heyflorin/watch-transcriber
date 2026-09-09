@@ -1,0 +1,879 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-09-06T06:57:10.065408+00:00",
+  "scope": "read-only-public-output-replay-and-explicit-candidate-policy-not-App-or-quality-promotion",
+  "original_run": "local-eval/matrix/outputs/moss-uniform-app-v1/run-7RKXpm",
+  "existing_policy_replay": {
+    "cases": 42,
+    "all_exact_text_timing_order_and_speaker": true,
+    "new_unknown_segments": 50,
+    "affected_cases": [
+      {
+        "case_id": "mandarin_02",
+        "windows": 1,
+        "new_unknown": 12,
+        "unmapped_slots": [
+          {
+            "conflicting_local_slots": [
+              "moss_speaker_2",
+              "moss_speaker_3",
+              "moss_speaker_4"
+            ],
+            "duration_ms": 38180,
+            "local_slot": "moss_speaker_5",
+            "support_by_global": {
+              "local_speaker_01": 0,
+              "local_speaker_02": 4246,
+              "local_speaker_03": 2130,
+              "local_speaker_04": 30191
+            },
+            "total_overlap_ms": 36567,
+            "window": 0
+          },
+          {
+            "conflicting_local_slots": [
+              "moss_speaker_2",
+              "moss_speaker_4"
+            ],
+            "duration_ms": 12800,
+            "local_slot": "moss_speaker_7",
+            "support_by_global": {
+              "local_speaker_01": 0,
+              "local_speaker_02": 0,
+              "local_speaker_03": 0,
+              "local_speaker_04": 12800
+            },
+            "total_overlap_ms": 12800,
+            "window": 0
+          }
+        ]
+      },
+      {
+        "case_id": "mandarin_06",
+        "windows": 1,
+        "new_unknown": 16,
+        "unmapped_slots": [
+          {
+            "conflicting_local_slots": [
+              "moss_speaker_1",
+              "moss_speaker_4",
+              "moss_speaker_5"
+            ],
+            "duration_ms": 37570,
+            "local_slot": "moss_speaker_2",
+            "support_by_global": {
+              "local_speaker_01": 1854,
+              "local_speaker_02": 0,
+              "local_speaker_03": 33685,
+              "local_speaker_04": 1871
+            },
+            "total_overlap_ms": 37410,
+            "window": 0
+          }
+        ]
+      },
+      {
+        "case_id": "overlap_01",
+        "windows": 1,
+        "new_unknown": 11,
+        "unmapped_slots": [
+          {
+            "conflicting_local_slots": [
+              "moss_speaker_1",
+              "moss_speaker_3",
+              "moss_speaker_4"
+            ],
+            "duration_ms": 7700,
+            "local_slot": "moss_speaker_2",
+            "support_by_global": {
+              "local_speaker_01": 7237,
+              "local_speaker_02": 0,
+              "local_speaker_03": 420
+            },
+            "total_overlap_ms": 7657,
+            "window": 0
+          },
+          {
+            "conflicting_local_slots": [
+              "moss_speaker_1",
+              "moss_speaker_3"
+            ],
+            "duration_ms": 7350,
+            "local_slot": "moss_speaker_5",
+            "support_by_global": {
+              "local_speaker_01": 7276,
+              "local_speaker_02": 0,
+              "local_speaker_03": 0
+            },
+            "total_overlap_ms": 7276,
+            "window": 0
+          }
+        ]
+      },
+      {
+        "case_id": "overlap_07",
+        "windows": 1,
+        "new_unknown": 8,
+        "unmapped_slots": [
+          {
+            "conflicting_local_slots": [
+              "moss_speaker_1",
+              "moss_speaker_3",
+              "moss_speaker_4"
+            ],
+            "duration_ms": 19210,
+            "local_slot": "moss_speaker_2",
+            "support_by_global": {
+              "local_speaker_01": 18605,
+              "local_speaker_02": 508,
+              "local_speaker_03": 0,
+              "local_speaker_04": 0
+            },
+            "total_overlap_ms": 19113,
+            "window": 0
+          }
+        ]
+      },
+      {
+        "case_id": "overlap_09",
+        "windows": 1,
+        "new_unknown": 3,
+        "unmapped_slots": [
+          {
+            "conflicting_local_slots": [
+              "moss_speaker_2",
+              "moss_speaker_3",
+              "moss_speaker_4"
+            ],
+            "duration_ms": 6780,
+            "local_slot": "moss_speaker_1",
+            "support_by_global": {
+              "local_speaker_01": 0,
+              "local_speaker_02": 6072,
+              "local_speaker_03": 708,
+              "local_speaker_04": 0
+            },
+            "total_overlap_ms": 6780,
+            "window": 0
+          }
+        ]
+      }
+    ]
+  },
+  "candidate": {
+    "policy": "single-window-native-multi-window-graph3-v1",
+    "selection": "physical window count only; never strata/truth/terms/scores",
+    "original_model_slots_retained_in_single_window": true,
+    "text_timing_order_unchanged": true,
+    "multi_window_outputs_unchanged": true,
+    "automatic_relative_comparison": {
+      "schema_version": 2,
+      "acceptance_policy": "miaoji-relative-v2",
+      "scope": "transcript_metrics_only",
+      "status": "insufficient_corpus",
+      "strata": {
+        "english": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7200640,
+          "miaoji": {
+            "wer": 0.2527979495941905,
+            "cer": 0.18302856948275276,
+            "der": 0.3726031111350944,
+            "jer": 0.5221999824947695,
+            "exact_speaker_count": 0.3,
+            "named_term_recall": 0.5,
+            "timestamp_coverage": 0.8341632850521702,
+            "adjacent_duplicate_rate": 0.0
+          },
+          "local": {
+            "wer": 0.16706535668517727,
+            "cer": 0.11935165321619505,
+            "der": 0.21907455642173398,
+            "jer": 0.26531906828931684,
+            "exact_speaker_count": 0.8,
+            "named_term_recall": 0.9,
+            "timestamp_coverage": 0.9173197163259108,
+            "adjacent_duplicate_rate": 0.0006105006105006105
+          }
+        },
+        "long_form": {
+          "sufficient": false,
+          "passed": false,
+          "failure_codes": [
+            "insufficient_corpus"
+          ],
+          "cases": 3,
+          "duration_ms": 16200192,
+          "miaoji": {
+            "wer": 0.3220074526864548,
+            "cer": 0.2434891014278201,
+            "der": 0.382968575781811,
+            "jer": 0.48821717390058966,
+            "exact_speaker_count": 0.3333333333333333,
+            "named_term_recall": 1.0,
+            "timestamp_coverage": 0.7755248309729611,
+            "adjacent_duplicate_rate": 0.0
+          },
+          "local": {
+            "wer": 0.22269948785726087,
+            "cer": 0.15554570777412002,
+            "der": 0.2257394878021728,
+            "jer": 0.34095294393108105,
+            "exact_speaker_count": 0.3333333333333333,
+            "named_term_recall": 1.0,
+            "timestamp_coverage": 0.9527947955270363,
+            "adjacent_duplicate_rate": 0.0
+          }
+        },
+        "mandarin": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7200640,
+          "miaoji": {
+            "wer": 0.16378068687385974,
+            "cer": 0.1641490110734174,
+            "der": 0.20353626107042916,
+            "jer": 0.42522242691331164,
+            "exact_speaker_count": 0.1,
+            "named_term_recall": 1.0,
+            "timestamp_coverage": 0.9224373630941912,
+            "adjacent_duplicate_rate": 0.0
+          },
+          "local": {
+            "wer": 0.15613097333802772,
+            "cer": 0.15611598284580427,
+            "der": 0.09556964529601417,
+            "jer": 0.20237575722592366,
+            "exact_speaker_count": 0.6,
+            "named_term_recall": 1.0,
+            "timestamp_coverage": 0.9682385791302857,
+            "adjacent_duplicate_rate": 0.009811937857726901
+          }
+        },
+        "mixed": {
+          "sufficient": true,
+          "passed": false,
+          "failure_codes": [
+            "speaker_count_noninferiority",
+            "named_term_recall"
+          ],
+          "cases": 10,
+          "duration_ms": 7225408,
+          "miaoji": {
+            "wer": 0.11623766208631701,
+            "cer": 0.09301480800871814,
+            "der": 0.20263478804434548,
+            "jer": 0.24337062101083626,
+            "exact_speaker_count": 0.8,
+            "named_term_recall": 1.0,
+            "timestamp_coverage": 0.9257975877298925,
+            "adjacent_duplicate_rate": 0.0
+          },
+          "local": {
+            "wer": 0.10257402748209793,
+            "cer": 0.08023675719566657,
+            "der": 0.16058914551648315,
+            "jer": 0.17130251838100433,
+            "exact_speaker_count": 0.7,
+            "named_term_recall": 0.9,
+            "timestamp_coverage": 0.9803627920730913,
+            "adjacent_duplicate_rate": 0.001081081081081081
+          }
+        },
+        "overlap": {
+          "sufficient": false,
+          "passed": false,
+          "failure_codes": [
+            "insufficient_corpus"
+          ],
+          "cases": 9,
+          "duration_ms": 1620864,
+          "miaoji": {
+            "wer": 0.4667585256631071,
+            "cer": 0.39578488372093024,
+            "der": 0.6971432741070451,
+            "jer": 0.801256017487559,
+            "exact_speaker_count": 0.0,
+            "named_term_recall": 0.6666666666666666,
+            "timestamp_coverage": 0.7265091586217826,
+            "adjacent_duplicate_rate": 0.007079646017699115
+          },
+          "local": {
+            "wer": 0.3563554943162246,
+            "cer": 0.29704457364341086,
+            "der": 0.46082997879852927,
+            "jer": 0.49841753147684503,
+            "exact_speaker_count": 0.6666666666666666,
+            "named_term_recall": 0.8888888888888888,
+            "timestamp_coverage": 0.8479615958584805,
+            "adjacent_duplicate_rate": 0.01023391812865497
+          }
+        }
+      },
+      "stretch": {
+        "target": "exact_speaker_count_per_stratum",
+        "minimum_accuracy": 0.95,
+        "status": "insufficient_corpus",
+        "strata": {
+          "english": false,
+          "long_form": null,
+          "mandarin": false,
+          "mixed": false,
+          "overlap": null
+        }
+      }
+    },
+    "lexical_assignment": {
+      "schema_version": 1,
+      "scope": "speaker_lexical_assignment_only",
+      "tokenizer": "wer-unicode-alphanumeric-han-v1",
+      "minimum_per_case": 0.99,
+      "status": "insufficient_corpus",
+      "strata": {
+        "english": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7200640,
+          "local": {
+            "lexical_tokens": 21378,
+            "assigned_tokens": 21378,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 19573,
+            "assigned_tokens": 19573,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        },
+        "long_form": {
+          "sufficient": false,
+          "passed": false,
+          "failure_codes": [
+            "insufficient_corpus"
+          ],
+          "cases": 3,
+          "duration_ms": 16200192,
+          "local": {
+            "lexical_tokens": 47651,
+            "assigned_tokens": 47651,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 44452,
+            "assigned_tokens": 44452,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        },
+        "mandarin": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7200640,
+          "local": {
+            "lexical_tokens": 31050,
+            "assigned_tokens": 31044,
+            "assigned_fraction": 0.9998067632850242,
+            "minimum_case_fraction": 0.9979729729729729,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 29930,
+            "assigned_tokens": 29930,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        },
+        "mixed": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7225408,
+          "local": {
+            "lexical_tokens": 25628,
+            "assigned_tokens": 25628,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 24975,
+            "assigned_tokens": 24975,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        },
+        "overlap": {
+          "sufficient": false,
+          "passed": false,
+          "failure_codes": [
+            "insufficient_corpus"
+          ],
+          "cases": 9,
+          "duration_ms": 1620864,
+          "local": {
+            "lexical_tokens": 4687,
+            "assigned_tokens": 4687,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 3904,
+            "assigned_tokens": 3904,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        }
+      }
+    },
+    "source_engine_integration": true,
+    "release_acceptance": false
+  },
+  "verification_error_classification": {
+    "change": "invalid_timing, invalid_segment, ambiguous_unknown_timing map to Verification",
+    "subprocess_tests_passed": 10,
+    "format_check_passed": true,
+    "original_failed_attempts_unchanged": true
+  },
+  "artifacts": [
+    {
+      "path": "local-eval/matrix/diagnostics/uniform-mapping/src/main.rs",
+      "sha256": "bd74a51339f508101bb7934e6aba946ca96353c619f1275dce744e5097a9dfb4"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/uniform-mapping/Cargo.lock",
+      "sha256": "e0da7ce8967a2806532b2f2d23bb5cfeb9984195a552724146bf84b88bc38ef2"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/uniform-mapping/report.json",
+      "sha256": "ac5511b168b2a5b5963917e53ce7ee2f7271fa0f9c71e9971f330c3e9d13d194"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/uniform-mapping/single-window-native-v1/echowall-local-quality-eval.json",
+      "sha256": "81e7f46b6e4547c66bacbbd3be0df8400e000b5d5a246aa9264da7bd4d18c203"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/uniform-mapping/single-window-native-v1/echowall-speaker-coverage.json",
+      "sha256": "e3331478490b8c8a4ebbf3011178ece82a50c8da7f8d80bd551e76c45587c9cb"
+    },
+    {
+      "path": "local-eval/matrix/manifest-moss-single-window-native-v1-42.json",
+      "sha256": "86fa700566d4ff101ff27db093cc88234e36c975b3f6d2e912c6c29b44720f68"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/moss-failed-window-replay-20260906/identity.json",
+      "sha256": "640063ae284b2ffe8ee1c931829b5836db953d298c8ddea41056029bde5dbb99"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/moss-failed-window-replay-20260906/replay-result.json",
+      "sha256": "5ebef9a22cce3b248f9b7224852f86c4d4e708537479451947aa2b783b1043b7"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/moss-failed-window-replay-20260906/long_form_04-timing-analysis.json",
+      "sha256": "db3ec05103741fd1c032731c228b2d29b4f6689b8b4c32f536eb612ea29191e0"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/moss-failed-window-replay-20260906/overlap_02-timing-analysis.json",
+      "sha256": "7b9a30f3ac3caea97a7ad46f1ec3567461bc568ab41c0c4227c809da9ea4b437"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/moss-failed-window-replay-20260906/stable-order-regression-proof.json",
+      "sha256": "6a7f27742f3994d03ee996072c27d85ea7eee91961808b7fea7868f613f1edc4"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/moss-failed-window-replay-20260906/overlap_02-historical-crosscheck.json",
+      "sha256": "d1dd2e8d2ab8c37ba4d658045dd5b5ab595dca016fbef7a3206eb7f134dada32"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/moss-failed-window-replay-20260906/final-preservation-check.json",
+      "sha256": "fed1526246ba7dc10ccf168c76af963beca728172c8400bf0ea36dd38ff01bcf"
+    }
+  ],
+  "failed_request_reproduction": {
+    "replay-result": {
+      "results": [
+        {
+          "case_id": "overlap_02",
+          "exit_code": 1,
+          "elapsed_seconds": 14.04,
+          "worker_error_codes": [
+            "invalid_timing"
+          ],
+          "stdout_bytes": 0,
+          "stderr_bytes": 42,
+          "bounded_stop": null,
+          "network_policy": "OS sandbox deny network*",
+          "minimal_worker_environment_keys": [
+            "ECHOWALL_APP_DATA_ROOT",
+            "ECHOWALL_WORKER_PARENT_PID",
+            "OS_ACTIVITY_MODE"
+          ]
+        },
+        {
+          "case_id": "long_form_04",
+          "exit_code": 1,
+          "elapsed_seconds": 43.555,
+          "worker_error_codes": [
+            "invalid_timing"
+          ],
+          "stdout_bytes": 0,
+          "stderr_bytes": 42,
+          "bounded_stop": null,
+          "network_policy": "OS sandbox deny network*",
+          "minimal_worker_environment_keys": [
+            "ECHOWALL_APP_DATA_ROOT",
+            "ECHOWALL_WORKER_PARENT_PID",
+            "OS_ACTIVITY_MODE"
+          ]
+        }
+      ],
+      "original_evidence_unchanged": true
+    },
+    "long_form_04-timing-analysis": {
+      "case_id": "long_form_04",
+      "adaptation_error": "invalid_timing",
+      "aborted": false,
+      "truncated": false,
+      "segment_count": 153,
+      "audio_duration_ms": 720000,
+      "raw_text_bytes": 13008,
+      "timing_issues": [
+        {
+          "index": 112,
+          "reasons": [
+            "start_order_regression"
+          ],
+          "previous_start_ms": 512070,
+          "neighbors": [
+            {
+              "index": 111,
+              "start_ms": 512070,
+              "end_ms": 602410,
+              "speaker_id": 1,
+              "text_bytes": 1508,
+              "text_sha256": "a13db806a222d7bed0131f8f1acc8f3dc01fe75248cb6c1164ec7a5ec025ab89"
+            },
+            {
+              "index": 112,
+              "start_ms": 510670,
+              "end_ms": 512110,
+              "speaker_id": 2,
+              "text_bytes": 20,
+              "text_sha256": "e1f6dda0f969fc4bddd231d0bff4bc5fa00dfdf46a676934586a1b690991706a"
+            },
+            {
+              "index": 113,
+              "start_ms": 511010,
+              "end_ms": 512510,
+              "speaker_id": 3,
+              "text_bytes": 16,
+              "text_sha256": "3ced7de80aa9a487219738116ea27c17657067f1da4533bffed1633a866057d5"
+            }
+          ]
+        }
+      ],
+      "speaker_slots": [
+        1,
+        2,
+        3
+      ]
+    },
+    "overlap_02-timing-analysis": {
+      "case_id": "overlap_02",
+      "adaptation_error": "invalid_timing",
+      "aborted": false,
+      "truncated": false,
+      "segment_count": 92,
+      "audio_duration_ms": 180000,
+      "raw_text_bytes": 4676,
+      "timing_issues": [
+        {
+          "index": 91,
+          "reasons": [
+            "end_exceeds_tail_policy"
+          ],
+          "previous_start_ms": 175740,
+          "neighbors": [
+            {
+              "index": 90,
+              "start_ms": 175740,
+              "end_ms": 179640,
+              "speaker_id": 2,
+              "text_bytes": 48,
+              "text_sha256": "6f6670c3be675f51bbe3aba2e0389b69901004345e40f0d785272908b776ecdb"
+            },
+            {
+              "index": 91,
+              "start_ms": 179680,
+              "end_ms": 180180,
+              "speaker_id": 3,
+              "text_bytes": 5,
+              "text_sha256": "85fec70372b092bb42d021a6d1b373081dde8bcf90feb49e0725e285043fb0ad"
+            }
+          ]
+        }
+      ],
+      "speaker_slots": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "stable-order-regression-proof": [
+      {
+        "all_segment_fields_preserved": true,
+        "case_id": "overlap_02",
+        "moved_positions": 0,
+        "native_inference_run": false,
+        "original_error": "invalid_timing",
+        "per_speaker_order_preserved": true,
+        "sorted_coalesced_segments": null,
+        "sorted_conflicting_segments": null,
+        "sorted_unknown_segments": null,
+        "stable_sorted_error": "invalid_timing",
+        "stable_sorted_segment_count": null
+      },
+      {
+        "all_segment_fields_preserved": true,
+        "case_id": "long_form_04",
+        "moved_positions": 4,
+        "native_inference_run": false,
+        "original_error": "invalid_timing",
+        "per_speaker_order_preserved": true,
+        "sorted_coalesced_segments": 2,
+        "sorted_conflicting_segments": 0,
+        "sorted_unknown_segments": 0,
+        "stable_sorted_error": null,
+        "stable_sorted_segment_count": 151
+      }
+    ],
+    "overlap_02-historical-crosscheck": {
+      "case_id": "overlap_02",
+      "historical_raw_sha256": "4ddd465975006a67bc1081e00602a8843531a24e2d0e9a650388ee95e12d4ab0",
+      "current_raw_sha256": "63f75429142f3afe26bbee539a63f5e328eaf78aae0d44d8bf31576a8b360aaf",
+      "raw_text_identical": false,
+      "last_explicit_end_ms": 180180,
+      "historical_manifest_duration_ms": 180096,
+      "actual_derived_pcm_duration_ms": 180000,
+      "overrun_against_historical_metadata_ms": 84,
+      "overrun_against_current_pcm_ms": 180,
+      "historical_canonical": {
+        "artifact": "local-eval/matrix/outputs/moss-raw-explicit-v1/overlap_02.json",
+        "segments": 92,
+        "last_start_ms": 179680,
+        "last_end_ms": 180096
+      },
+      "historical_mapped_canonical": {
+        "artifact": "local-eval/matrix/outputs/moss-speakerkit-identity-map-v1/overlap_02.json",
+        "segments": 92,
+        "last_start_ms": 179680,
+        "last_end_ms": 180096
+      },
+      "historical_mapping_window_end_ms": 180096
+    },
+    "final-preservation-check": {
+      "original_evidence_unchanged": true,
+      "original_worker_unchanged": true,
+      "active_moss_inference_processes": [],
+      "no_product_source_edits_by_diagnosis": true
+    },
+    "scope": "exact original public requests; retained worker and isolated diagnostic worker; no transcript correction authorized by this evidence"
+  },
+  "actual_app_finalizer_replay": {
+    "schema2_exact_cases": 42,
+    "schema3_challenger_exact_cases": 42,
+    "segments": 8440,
+    "single_window_cases": 29,
+    "old_unknown_segments": 51,
+    "candidate_unknown_segments": 1,
+    "failed_cases_retained": 2,
+    "artifact_writes": 0,
+    "network_policy": "OS-network-deny",
+    "proof_kind": "read-only-response-replay-not-inference-or-ledger-migration"
+  },
+  "verification": {
+    "normal_app_tests_passed": 327,
+    "explicitly_ignored": 31,
+    "clippy_lib_tests_examples": "passed",
+    "moss_worker_subprocess_passed": 10,
+    "legacy_scorer_replay": "exact-retained-snapshot-verified",
+    "unknown_scorer_kind": "closed-rejection",
+    "focused_persistence_review": "no-high-critical-production-finding; legacy-test-fixture-corrected"
+  },
+  "native_source_engine_pilot": {
+    "root": "local-eval/matrix/outputs/moss-app-engine-v1/english_01-O0oHVl",
+    "completed": {
+      "archive_audio_sha256": "22c340e2193a29a14ecfcda5d6e7c0010b9d7efbbc3e4d0fc9ac374a2969fc8c",
+      "credentials": "ephemeral-empty",
+      "elapsed_seconds": 337.605567667,
+      "idempotent_resume": true,
+      "mapping_policy": "single-window-native-multi-window-graph3-v1",
+      "network_policy": "outer-test-and-three-workers-deny-network",
+      "personal_audio": false,
+      "plan_sha256": "ca9b365d0f5da2ddc882f201360aa142ff9d5029f0279edc06f14f847366a01e",
+      "plan_version": 3,
+      "playback": false,
+      "prior_worker_identity": "started.json",
+      "recording_id": "f9daa994-3488-4c40-b93f-8ce9ec4693b5",
+      "reused_windows": 0,
+      "scope": "source_engine_not_signed_app_or_quality_acceptance",
+      "segments": 184,
+      "selected_worker_sha256": {
+        "moss": "f868d73941f6a28bae49fc4150f738f5fc5e6ded1ed4a281ce26ad9b66196d41",
+        "speakerkit": "e3c0a914d9b2910de2d1867a545b306a29f2cdb1d6d9ddc9ffe2cbb15372d602",
+        "summary": "0d2161ece5ad301c537ac5973ff80e7e760db318f078d364234fcaf4c32a6bb2"
+      },
+      "source_sha256": "22c340e2193a29a14ecfcda5d6e7c0010b9d7efbbc3e4d0fc9ac374a2969fc8c",
+      "state": "pass",
+      "summary_fields": 7,
+      "windows": 1
+    },
+    "completed_sha256": "045d9051cc3dad7f26d0ae4b4212ca4ea653c07e987b18cc699b71c89295558c",
+    "scope": "debug-source-engine-not-installed-signed-App-or-corpus-quality-acceptance"
+  },
+  "timing_v3": {
+    "policy": "joint-stable-chronological-adjacent-union-unknown-tail100-v3",
+    "scope": "explicit-canonical-chronological-order-with-immutable-emission-order-raw-receipt",
+    "authority_basis": "original canonical-order-through-summary/archive requirement; HEAD8cec70a README line137 prior chronologicalproviderbehavior; recentextraapprovalinterpretation superseded",
+    "protocol_library_tests_passed": 33,
+    "App_local_moss_tests_passed": 22,
+    "App_preparation_tests_passed": 14,
+    "normal_App_tests_passed": 332,
+    "normal_App_tests_ignored": 31,
+    "native_reproduction": {
+      "results": [
+        {
+          "case_id": "long_form_04",
+          "exit_code": 0,
+          "elapsed_seconds": 47.532,
+          "worker_error_codes": [],
+          "stdout_bytes": 19413,
+          "stderr_bytes": 0,
+          "bounded_stop": null,
+          "network_policy": "OS sandbox deny network*",
+          "minimal_worker_environment_keys": [
+            "ECHOWALL_APP_DATA_ROOT",
+            "ECHOWALL_WORKER_PARENT_PID",
+            "OS_ACTIVITY_MODE"
+          ]
+        },
+        {
+          "case_id": "overlap_02",
+          "exit_code": 1,
+          "elapsed_seconds": 13.692,
+          "worker_error_codes": [
+            "invalid_timing"
+          ],
+          "stdout_bytes": 0,
+          "stderr_bytes": 42,
+          "bounded_stop": null,
+          "network_policy": "OS sandbox deny network*",
+          "minimal_worker_environment_keys": [
+            "ECHOWALL_APP_DATA_ROOT",
+            "ECHOWALL_WORKER_PARENT_PID",
+            "OS_ACTIVITY_MODE"
+          ]
+        }
+      ],
+      "original_evidence_unchanged": true
+    },
+    "native_response_fields_equal_to_prior_diagnostic_except_policy": true,
+    "native_long_raw_segments": 153,
+    "raw_start_order_regressions_retained": 1,
+    "adapted_long_segments": 151,
+    "source_positions_moved": 4,
+    "coalesced_source_segments": 2,
+    "unknown_segments": 0,
+    "worker_sha256": "698c8cd82e0fd04a2fb938d3184cb11566ee70b5d5aaeaab1a840258e2305ffa",
+    "native_artifact_root": "local-eval/matrix/diagnostics/moss-failed-window-replay-20260906/native-timing-v3",
+    "source_selection": "newprep2timingv3; preservedprep1/2timingv2 untouched",
+    "review": "noHighCritical in raw/canonical conservation or100ms gates"
+  },
+  "release_diarization_worker": {
+    "sha256": "11fa08fab093a25d20dcbc30974a73ba1d73bec3f7fbcd9d3815341ab9844b24",
+    "size_bytes": 1500760,
+    "no_network_linkage": true,
+    "no_builder_paths": true,
+    "presets": "v1 andv2",
+    "release_flags": [
+      "-Xswiftc",
+      "-gnone",
+      "-Xcc",
+      "-g0",
+      "-Xcxx",
+      "-g0"
+    ],
+    "packaging_tests_passed": 5
+  },
+  "practical_acceptance_clarification": {
+    "date": "2026-09-06",
+    "user_criterion": "\u8868\u73b0\u80fd\u548c\u98de\u4e66\u5dee\u4e0d\u591a\u5c31\u53ef\u4ee5\u63a5\u53d7\u4e86",
+    "new_research_stopped": true,
+    "fine_window_edits_landed": false,
+    "isolated_metric_deficits_are_diagnostics": true
+  },
+  "latest_practical_source_engine_check": {
+    "root": "local-eval/matrix/outputs/moss-app-engine-v1/english_01-zgDcVh",
+    "completed": {
+      "adaptation_policy": "joint-stable-chronological-adjacent-union-unknown-tail100-v3",
+      "archive_audio_sha256": "22c340e2193a29a14ecfcda5d6e7c0010b9d7efbbc3e4d0fc9ac374a2969fc8c",
+      "credentials": "ephemeral-empty",
+      "diarization_preset": "speakerkit-pyannote-v3-exclusive-tail-context-v2",
+      "elapsed_seconds": 349.457197625,
+      "idempotent_resume": true,
+      "mapping_policy": "single-window-native-multi-window-graph3-v1",
+      "network_policy": "outer-test-and-three-workers-deny-network",
+      "personal_audio": false,
+      "plan_sha256": "6793a01540ccda393f03625be9eb2c029057260eb69bc5a21778c4b03cea519c",
+      "plan_version": 3,
+      "playback": false,
+      "prior_worker_identity": "started.json",
+      "recording_id": "aeef3cd2-b2cd-4103-9b47-696720e10dc3",
+      "reused_windows": 0,
+      "scope": "source_engine_not_signed_app_or_quality_acceptance",
+      "segments": 184,
+      "selected_worker_sha256": {
+        "moss": "698c8cd82e0fd04a2fb938d3184cb11566ee70b5d5aaeaab1a840258e2305ffa",
+        "speakerkit": "11fa08fab093a25d20dcbc30974a73ba1d73bec3f7fbcd9d3815341ab9844b24",
+        "summary": "0d2161ece5ad301c537ac5973ff80e7e760db318f078d364234fcaf4c32a6bb2"
+      },
+      "source_sha256": "22c340e2193a29a14ecfcda5d6e7c0010b9d7efbbc3e4d0fc9ac374a2969fc8c",
+      "state": "pass",
+      "summary_fields": 7,
+      "windows": 1
+    },
+    "completed_sha256": "e7802536172b5e9a4bbc4d074f8a666ec6dc6a14b210dfb0240fa9ba2351ef4e",
+    "scope": "actual-source-engine-transcript-summary-local-archive-not-installed-App-or-public-release"
+  }
+}

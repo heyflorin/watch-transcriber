@@ -28,8 +28,14 @@ sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "scripts" / "ops"))
 
 import transcribe  # noqa: E402  (loads .env, Gemini helpers)
-from apply_speakers import apply_keys  # noqa: E402
-from deliveries import archive_git, archive_root, manifest, safe_filename  # noqa: E402
+from apply_speakers import _apply_keys  # noqa: E402
+from deliveries import (  # noqa: E402
+    archive_git,
+    archive_mutation_lock,
+    archive_root,
+    manifest,
+    safe_filename,
+)
 
 MIN_RESPONSE_CHARS = 200
 ATT_BASENAME = "GPT-Pro-分析"
@@ -183,7 +189,13 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
     os.chdir(REPO_ROOT)
+    if args.dry_run:
+        return _run_import(args)
+    with archive_mutation_lock():
+        return _run_import(args)
 
+
+def _run_import(args) -> int:
     export = json.load(open(args.export_json, encoding="utf-8"))
     m = manifest.load()
     uploads = collect_uploads(export, list(m))
@@ -223,7 +235,7 @@ def main() -> int:
         return 0
 
     manifest.save(m)
-    changed = apply_keys(sorted(set(tagged) | set(uploads)), rebuild_viewer=True)
+    changed = _apply_keys(sorted(set(tagged) | set(uploads)), rebuild_viewer=True)
     archive_git.deliver({"title": f"import: GPT Pro thread ({len(uploads)} recordings)"})
     if conflicts:
         print("\nconflicts (manual tags kept):\n  " + "\n  ".join(conflicts))

@@ -13,7 +13,7 @@ import json
 import os
 import re
 import shutil
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 from . import archive_root
@@ -92,7 +92,13 @@ def build() -> Path:
         md_path = root / entry["note"] if entry.get("note") else None
         if not md_path or not md_path.exists():
             continue
-        day, hhmmss = key.split(" ")
+        archive_day, archive_hhmmss = key.split(" ")
+        try:
+            captured = datetime.fromisoformat(entry.get("captured_at") or "")
+            day = captured.strftime("%Y-%m-%d")
+            hhmmss = captured.strftime("%H%M%S")
+        except ValueError:
+            day, hhmmss = archive_day, archive_hhmmss
         parsed = _parse_note(md_path)
         ai_title = re.sub(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}\s*", "", entry["title"])
         entries.append({
@@ -106,6 +112,11 @@ def build() -> Path:
             "category": entry.get("category") or manifest_mod.FALLBACK_CATEGORY,
             "original": entry.get("original"),
             "audio": entry.get("audio"),
+            "r2_audio": entry.get("r2_key"),
+            "recording_id": entry.get("recording_id"),
+            "publish_generation": entry.get("publish_generation"),
+            "source": entry.get("source"),
+            "source_kind": entry.get("source_kind"),
             "speakers": entry.get("speakers") or {},
             "attachments": _load_attachments(root, entry),
             **parsed,
@@ -134,10 +145,36 @@ def build() -> Path:
 
 
 def deliver(note: dict) -> bool:
-    dest = build()
-    print(f"[delivery:viewer] rebuilt {dest}")
+    build()
+    print("[delivery:viewer] archive viewer rebuilt")
     return True
 
 
+def verify_destination(note: dict) -> dict[str, object]:
+    """Parse the generated payload and verify the recording is represented."""
+
+    path = archive_root() / "index.html"
+    try:
+        html = path.read_text(encoding="utf-8")
+        payload_text = html.split('type="application/json">', 1)[1].split(
+            "</script>", 1
+        )[0]
+        payload = json.loads(payload_text.replace("<\\/", "</"))
+        expected_key = manifest_mod.key_for_note(note)
+        entry = next(item for item in payload["entries"] if item["key"] == expected_key)
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, IndexError, StopIteration, TypeError):
+        raise OSError("archive viewer could not be verified") from None
+    for field in ("recording_id", "publish_generation", "source", "source_kind"):
+        expected = note.get(field)
+        if expected is not None and entry.get(field) != expected:
+            raise OSError("archive viewer failed identity verification")
+    return {
+        "backend": "local_archive",
+        "locator": path.resolve().relative_to(archive_root()).as_posix(),
+        "recording_key": expected_key,
+    }
+
+
 if __name__ == "__main__":
-    print(f"viewer: {build()}")
+    build()
+    print("viewer: archive rebuilt")

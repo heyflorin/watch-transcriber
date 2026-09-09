@@ -13,6 +13,8 @@ Run AFTER audio_archive in DELIVERY_TARGETS. Bulk/catch-up:
 import os
 import shutil
 import subprocess
+import hashlib
+import threading
 
 from . import archive_root, parse_note_dt, recording_stem
 
@@ -52,8 +54,7 @@ def upload(rel_path: str) -> bool:
         capture_output=True, text=True, timeout=900, env=wrangler_env(),
     )
     if r.returncode != 0:
-        tail = (r.stderr.strip() or r.stdout.strip()).splitlines()
-        print(f"[delivery:r2_backup] upload failed: {tail[-1][:160] if tail else 'unknown'}")
+        print("[delivery:r2_backup] upload failed")
         return False
     return True
 
@@ -72,5 +73,95 @@ def deliver(note: dict) -> bool:
     rel = str(audio.relative_to(archive_root()))
     if not upload(rel):
         return False
-    print(f"[delivery:r2_backup] uploaded {rel}")
+    print("[delivery:r2_backup] recording audio uploaded")
     return True
+
+
+def audio_relative_path(note: dict) -> str:
+    dt = parse_note_dt(note)
+    date_dir = archive_root() / dt.strftime("%Y-%m-%d")
+    audio = next(
+        (
+            path
+            for path in sorted(date_dir.glob(f"{recording_stem(note)}.*"))
+            if path.suffix not in (".md", ".tmp")
+        ),
+        None,
+    )
+    if audio is None:
+        raise OSError("archive audio is unavailable for R2 verification")
+    return audio.relative_to(archive_root()).as_posix()
+
+
+def verify_destination(
+    note: dict,
+    *,
+    expected_sha256: str,
+    expected_size_bytes: int,
+    timeout_seconds: float = 900,
+) -> dict[str, object]:
+    """Bounded-download and hash the actual private R2 object."""
+
+    wrangler = wrangler_bin()
+    if not wrangler:
+        raise OSError("R2 verification tool is unavailable")
+    rel = audio_relative_path(note)
+    try:
+        process = subprocess.Popen(
+            [wrangler, "r2", "object", "get", f"{bucket()}/{rel}", "--pipe", "--remote"],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            env=wrangler_env(),
+        )
+    except Exception:
+        raise OSError("R2 verification could not start") from None
+
+    observed: dict[str, object] = {}
+
+    def read_bounded() -> None:
+        digest = hashlib.sha256()
+        size = 0
+        assert process.stdout is not None
+        try:
+            while True:
+                chunk = process.stdout.read(1024 * 1024)
+                if not chunk:
+                    break
+                size += len(chunk)
+                if size > expected_size_bytes:
+                    observed["error"] = "oversized"
+                    process.kill()
+                    return
+                digest.update(chunk)
+            observed["sha256"] = digest.hexdigest()
+            observed["size_bytes"] = size
+        except Exception:
+            observed["error"] = "read"
+            process.kill()
+
+    reader = threading.Thread(target=read_bounded, daemon=True)
+    reader.start()
+    try:
+        return_code = process.wait(timeout=timeout_seconds)
+    except Exception:
+        process.kill()
+        process.wait()
+        reader.join(timeout=5)
+        raise OSError("R2 verification timed out") from None
+    reader.join(timeout=5)
+    if (
+        reader.is_alive()
+        or return_code != 0
+        or observed.get("error") is not None
+        or observed.get("size_bytes") != expected_size_bytes
+        or observed.get("sha256") != expected_sha256
+    ):
+        raise OSError("R2 object failed integrity verification")
+    return {
+        "backend": "r2",
+        "locator": f"{bucket()}/{rel}",
+        "version_id": f"sha256:{expected_sha256}",
+        "sha256": expected_sha256,
+        "size_bytes": expected_size_bytes,
+    }

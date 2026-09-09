@@ -36,7 +36,7 @@ def deliver(note: dict) -> bool:
             capture_output=True, text=True, timeout=300,
         )
         if result.returncode != 0:
-            print(f"[delivery:agent] claude -p failed: {result.stderr[:500]}")
+            print("[delivery:agent] claude -p failed")
             return False
 
         print("[delivery:agent] delivered via claude -p")

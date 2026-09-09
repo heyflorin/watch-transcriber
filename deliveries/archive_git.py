@@ -10,6 +10,7 @@ when data/ isn't a git repo.
 
 import re
 import subprocess
+from pathlib import Path
 
 from . import archive_root
 
@@ -33,7 +34,7 @@ marked.min.js
 def deliver(note: dict) -> bool:
     root = archive_root()
     if not (root / ".git").exists():
-        print(f"[delivery:archive_git] skipped — {root} is not a git repo")
+        print("[delivery:archive_git] skipped — archive is not a git repo")
         return True
     gi = root / ".gitignore"
     if not gi.exists():
@@ -48,24 +49,71 @@ def deliver(note: dict) -> bool:
     git("add", "-A")
     if not git("status", "--porcelain").stdout.strip():
         print("[delivery:archive_git] nothing to commit")
-        return True
-    # Ops callers (delete/import/speakers scripts) pass an action-shaped title
-    # like "delete: …" — use it verbatim; plain note titles get the add: prefix.
-    title = note["title"]
-    msg = title if re.match(r"^[a-z][a-z-]*: ", title) else f"add: {title}"
-    r = git("commit", "-m", msg)
-    if r.returncode != 0:
-        print(f"[delivery:archive_git] commit failed: {r.stderr.strip()[:200]}")
-        return False
-    print(f"[delivery:archive_git] committed: {note['title']}")
+    else:
+        # Ops callers (delete/import/speakers scripts) pass an action-shaped title
+        # like "delete: …" — use it verbatim; plain note titles get the add: prefix.
+        title = note["title"]
+        msg = title if re.match(r"^[a-z][a-z-]*: ", title) else f"add: {title}"
+        r = git("commit", "-m", msg)
+        if r.returncode != 0:
+            print("[delivery:archive_git] commit failed")
+            return False
+        print("[delivery:archive_git] recording metadata committed")
 
     # Push if a remote exists (private backup repo). Offline is fine — the
     # commit is safe locally and the next successful push carries it along.
     if git("remote").stdout.strip():
         p = git("push")
         if p.returncode != 0:
-            print(f"[delivery:archive_git] push failed (will retry next run): "
-                  f"{p.stderr.strip().splitlines()[-1][:120] if p.stderr.strip() else 'unknown'}")
+            print("[delivery:archive_git] push failed; retry is safe")
         else:
             print("[delivery:archive_git] pushed")
     return True
+
+
+def verify_destination(note: dict) -> dict[str, object]:
+    """Verify the local commit, and its upstream when a remote is configured."""
+
+    root = archive_root()
+    if not (root / ".git").is_dir():
+        raise OSError("archive Git repository is unavailable")
+
+    def git(*args: str) -> subprocess.CompletedProcess[str]:
+        try:
+            return subprocess.run(
+                ["git", "-C", str(root), *args],
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+        except Exception:
+            raise OSError("archive Git verification failed") from None
+
+    head = git("rev-parse", "HEAD")
+    status = git("status", "--porcelain")
+    tree = git("ls-tree", "-r", "--name-only", "HEAD")
+    if head.returncode or status.returncode or tree.returncode or status.stdout.strip():
+        raise OSError("archive Git verification failed")
+    commit = head.stdout.strip()
+    tracked = set(tree.stdout.splitlines())
+    note_path = Path(note.get("archive_note_locator") or "")
+    if "manifest.json" not in tracked:
+        raise OSError("archive Git commit is missing the manifest")
+    if note_path.as_posix() and note_path.as_posix() not in tracked:
+        raise OSError("archive Git commit is missing the recording note")
+
+    remote = git("remote")
+    if remote.returncode:
+        raise OSError("archive Git verification failed")
+    upstream: str | None = None
+    if remote.stdout.strip():
+        upstream_result = git("rev-parse", "@{upstream}")
+        if upstream_result.returncode or upstream_result.stdout.strip() != commit:
+            raise OSError("archive Git upstream does not contain the publication")
+        upstream = upstream_result.stdout.strip()
+    return {
+        "backend": "git",
+        "locator": commit,
+        "version_id": commit,
+        "upstream": upstream,
+    }

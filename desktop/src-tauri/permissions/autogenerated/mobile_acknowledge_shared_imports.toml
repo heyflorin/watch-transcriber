@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-mobile-acknowledge-shared-imports"
+description = "Enables the mobile_acknowledge_shared_imports command without any pre-configured scope."
+commands.allow = ["mobile_acknowledge_shared_imports"]
+
+[[permission]]
+identifier = "deny-mobile-acknowledge-shared-imports"
+description = "Denies the mobile_acknowledge_shared_imports command without any pre-configured scope."
+commands.deny = ["mobile_acknowledge_shared_imports"]

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "pack_id": "qwen-asr-candidate-v1",
+  "display_name": "Qwen3-ASR 1.7B + ForcedAligner 0.6B (Candidate)",
+  "runtime_id": "qwen-asr-rust-0.11.0",
+  "asr_model_id": "qwen3-asr-1.7b",
+  "asr_model_revision": "7278e1e70fe206f11671096ffdd38061171dd6e5",
+  "aligner_model_id": "qwen3-forced-aligner-0.6b",
+  "aligner_model_revision": "c7cbfc2048c462b0d63a45797104fc9db3ad62b7",
+  "minimum_macos_major": 14,
+  "minimum_memory_bytes": 34359738368,
+  "sources": [
+    {
+      "id": "qwen-asr",
+      "base_url": "https://huggingface.co/Qwen/Qwen3-ASR-1.7B/resolve/7278e1e70fe206f11671096ffdd38061171dd6e5",
+      "license": "Apache-2.0",
+      "attribution": "Official Qwen3-ASR-1.7B model"
+    },
+    {
+      "id": "qwen-aligner",
+      "base_url": "https://huggingface.co/Qwen/Qwen3-ForcedAligner-0.6B/resolve/c7cbfc2048c462b0d63a45797104fc9db3ad62b7",
+      "license": "Apache-2.0",
+      "attribution": "Official Qwen3-ForcedAligner-0.6B model"
+    }
+  ],
+  "files": [
+    {
+      "source_id": "qwen-asr",
+      "source_path": "model-00001-of-00002.safetensors",
+      "install_path": "models/qwen/asr/qwen3-asr-1.7b/model-00001-of-00002.safetensors",
+      "sha256": "a4cd1f1a04d90b757dc7f7dd26254e69a013b19e80efe590a83c6a3bde8608d6",
+      "size_bytes": 4220320824
+    },
+    {
+      "source_id": "qwen-asr",
+      "source_path": "model-00002-of-00002.safetensors",
+      "install_path": "models/qwen/asr/qwen3-asr-1.7b/model-00002-of-00002.safetensors",
+      "sha256": "6e0b9d9e09e2e0238e7ef3cc8a484ab387e91b90f1900bedf88bc92d7929ccfc",
+      "size_bytes": 478200688
+    },
+    {
+      "source_id": "qwen-asr",
+      "source_path": "vocab.json",
+      "install_path": "models/qwen/asr/qwen3-asr-1.7b/vocab.json",
+      "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+      "size_bytes": 2776833
+    },
+    {
+      "source_id": "qwen-aligner",
+      "source_path": "model.safetensors",
+      "install_path": "models/qwen/aligner/qwen3-forced-aligner-0.6b/model.safetensors",
+      "sha256": "47831d0e82f96b20e9034dba01a075ee06436654719f6a68289e49f1b65ce0e7",
+      "size_bytes": 1835544544
+    },
+    {
+      "source_id": "qwen-aligner",
+      "source_path": "vocab.json",
+      "install_path": "models/qwen/aligner/qwen3-forced-aligner-0.6b/vocab.json",
+      "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+      "size_bytes": 2776833
+    }
+  ]
+}

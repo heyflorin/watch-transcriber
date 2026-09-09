@@ -64,14 +64,14 @@ def deliver(note: dict) -> bool:
     result = subprocess.run(cmd, input=markdown, capture_output=True, text=True, timeout=60)
 
     if result.returncode != 0:
-        print(f"[delivery:feishu] error: {(result.stderr or result.stdout)[:500]}")
+        print("[delivery:feishu] document create failed")
         return False
 
     doc_url = _parse_doc_url(result.stdout)
     if doc_url:
         note["feishu_doc_url"] = doc_url
 
-    print(f"[delivery:feishu] created doc '{title}'")
+    print("[delivery:feishu] document created")
 
     # Best-effort ownership transfer: delivery success is judged on doc
     # creation; a failed transfer is logged loudly but never fails the note.
@@ -90,7 +90,7 @@ def deliver(note: dict) -> bool:
         try:
             metas = json.loads(meta.stdout)["data"]["metas"]
             if metas and metas[0].get("owner_id") == owner:
-                print(f"[delivery:feishu] doc already owned by {owner}")
+                print("[delivery:feishu] document ownership already correct")
                 return True
         except (json.JSONDecodeError, KeyError, TypeError):
             pass  # owner unknown — fall through and attempt the transfer
@@ -106,8 +106,7 @@ def deliver(note: dict) -> bool:
             capture_output=True, text=True, timeout=30,
         )
         if xfer.returncode == 0 and '"ok": true' in (xfer.stdout or ""):
-            print(f"[delivery:feishu] ownership transferred to {owner}")
+            print("[delivery:feishu] document ownership transferred")
         else:
-            print(f"[delivery:feishu] WARN: owner transfer failed: "
-                  f"{(xfer.stdout or xfer.stderr)[:200]}")
+            print("[delivery:feishu] ownership transfer failed")
     return True

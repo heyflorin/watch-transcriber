@@ -1,0 +1,197 @@
+{
+  "date": "2026-09-06",
+  "acceptance": "Practical Feishu/Miaoji-comparable meeting notes; no new model research or perfect-metric gate",
+  "scope": "Current local artifacts and isolated real macOS App UI proof; Release 1 physical platform acceptance remains incomplete",
+  "fixes": [
+    "Supported Mac MOSS entry enabled with independent kill switches retained",
+    "App-owned durable remote/Whisper/MOSS preference; no implicit route for an unset or unreadable preference",
+    "Startup and UI callbacks keep unselected Queued jobs from uploading",
+    "Local preference never silently falls back to cloud; existing jobs keep their route",
+    "Radio controls sized correctly in actual macOS WebKit",
+    "Unix libc dependency shared with Android and iOS"
+  ],
+  "artifacts": {
+    "macos": {
+      "path": "local-eval/closeout-20260906/artifacts/EchoWall-0.2.0-macOS-universal-20260906.dmg",
+      "sha256": "1de724932c0e73ca0d96b359c834bc5004ab9b7ae0fbec2f2ca53cd7cdb4ec01",
+      "bytes": 24667130,
+      "signing": "Developer ID, hardened runtime, App and DMG notarized/stapled; Gatekeeper accepted",
+      "privacy_gate": true,
+      "dmg_binaries_match_app": true,
+      "binaries": [
+        {
+          "name": "desktop",
+          "sha256": "0348d77f86942ac5a64833335a70bfd0a0d24eb0b7f552df59af91e48f58d061",
+          "architectures": "x86_64 arm64"
+        },
+        {
+          "name": "echowall-diarization-worker",
+          "sha256": "d1eb22e935a197bf3c730e07210db82998405d65272b986775aa771b22085ec1",
+          "architectures": "x86_64 arm64"
+        },
+        {
+          "name": "echowall-moss-worker",
+          "sha256": "f98da2e41f6510934a900a157dbc78d5263384cd2843b290d6fae0d01ea0a1f1",
+          "architectures": "x86_64 arm64"
+        },
+        {
+          "name": "echowall-qwen-worker",
+          "sha256": "9e3996fa379659ea0ba5d31a340523fd117cf9bd752b15c162381a53785b27d8",
+          "architectures": "x86_64 arm64"
+        },
+        {
+          "name": "echowall-summary-worker",
+          "sha256": "0939f6b8248dbf7ecca911f95db121cb594e5418dfceb3ba1e5e7fd8fd1d758d",
+          "architectures": "x86_64 arm64"
+        },
+        {
+          "name": "echowall-whisper-worker",
+          "sha256": "a051660152b57285c35b2d7988c45270cab00fffc826873fe7e1f3647583504c",
+          "architectures": "x86_64 arm64"
+        }
+      ]
+    },
+    "android": {
+      "path": "local-eval/closeout-20260906/artifacts/EchoWall_0.2.0_android_universal.apk",
+      "sha256": "6cc1002471c7fd9aa3e5cf87bda53a20692c376dad42dded41815e4a41f1d8ef",
+      "bytes": 44390454,
+      "abi_set": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "signature_verified": true,
+      "same_release_signer": true,
+      "ndk": "27.1.12297006; CI uses27.2.12479018",
+      "installed": false
+    },
+    "ios": {
+      "path": "local-eval/closeout-20260906/artifacts/ios-export/EchoWall.ipa",
+      "sha256": "37da77e4cb9433fbf770e1cd4b9188d309c4eaa65bf862131f721f79f795e0c7",
+      "bytes": 9099750,
+      "signing": "Apple Distribution; App and Share signatures/profiles/App Group verified",
+      "distribution": "App Store export, not a directly sideloadable development IPA",
+      "installed": false
+    }
+  },
+  "app_ui": {
+    "flavor": "Isolated real QA App; current importer, engine, native workers and viewer",
+    "fixture_scope": {
+      "english_01": "retained prior generation opened and cold-reopened",
+      "mandarin_01": "fresh native picker, explicit MOSS selection, complete pipeline, summary/transcript opened",
+      "mixed_01": "fresh native picker, explicit MOSS selection, two-window complete pipeline, summary opened and original exported"
+    },
+    "jobs": [
+      {
+        "recording_id": "3f8503ac-4fba-4646-8f37-4c4ce65d2305",
+        "source_sha256": "5de1c7b124943fa1b87088e688066c68e5746b431f70c76c737b3d781e17ac04",
+        "state": "complete",
+        "segments": 202,
+        "summary_fields": 7,
+        "ledger_sha256": "3d5a3888f052a0d849b1381d546045e1a975ba5623238dea2d395335e6553ae3",
+        "note": "2026-09-05/031100-小区停车管理优化与绿化卫生宠物治理会议.md",
+        "note_sha256": "8befeec9ff65e111d594e98147b6c1e70b43f2433b9e3bef2be275f4d7a92957",
+        "audio": "2026-09-05/031100-小区停车管理优化与绿化卫生宠物治理会议.m4a",
+        "windows": 1
+      },
+      {
+        "recording_id": "8977cec8-ea6d-4ac9-9ebd-3f299b1ab070",
+        "source_sha256": "22c340e2193a29a14ecfcda5d6e7c0010b9d7efbbc3e4d0fc9ac374a2969fc8c",
+        "state": "complete",
+        "segments": 184,
+        "summary_fields": 7,
+        "ledger_sha256": "c06c34071f281b04aa2aad01b72e9272433492459b36d491b0c50dc0e021575d",
+        "note": "2026-09-05/030948-Public-AMI-english01-isolated-QA.md",
+        "note_sha256": "517b6672a83450d19b25b9c43bd3502d4bf69cea6e96d0ead33b6f8529453f20",
+        "audio": "2026-09-05/030948-Public-AMI-english01-isolated-QA.m4a",
+        "windows": 1
+      },
+      {
+        "recording_id": "f5d1bed1-ec86-483d-a669-920d0cb5db2a",
+        "source_sha256": "b4315116d932b569c4d8871e5ceeb2c138eb0add8d08521d0627b233348d439d",
+        "state": "complete",
+        "segments": 100,
+        "summary_fields": 7,
+        "ledger_sha256": "0fbd58a2be1b2c11755085453942363ad72a6f9f39e6e21c1a47c811ca7a43e6",
+        "note": "2026-09-05/031101-Multi-speaker-Social-Gathering-and-Academic-Exchange.md",
+        "note_sha256": "782bb92c103af20355797d43fe2fa52736c19799b3cbad5f1561d2446a233395",
+        "audio": "2026-09-05/031101-Multi-speaker-Social-Gathering-and-Academic-Exchange.m4a",
+        "windows": 2
+      }
+    ],
+    "source_archive_export_hashes_match": true,
+    "unique_archive_entries": 3,
+    "cold_reopen": {
+      "scope": "current-isolated-QA-App-real-UI-not-production-installed-App-or-OS-network-trace",
+      "pid": 31678,
+      "observed_seconds": 11.425,
+      "jobs_unchanged": 3,
+      "manifest_notes_audio_preference_unchanged": true,
+      "child_workers": 0,
+      "qa_http_denials": 0,
+      "result_opened_in_native_ui_after_cold_launch": true
+    },
+    "no_audio_playback": true,
+    "production_data_untouched": true,
+    "http_evidence": "No remote checkpoints or QA HTTP-denial markers; production worker deny-network sandbox unchanged. This is not an OS-wide App network trace."
+  },
+  "verification": {
+    "app_tests": {
+      "passed": 337,
+      "opt_in_ignored": 31,
+      "additional_physical_capture_tests_ignored": 3
+    },
+    "clippy": "lib/tests -D warnings passed",
+    "rustfmt": "passed",
+    "packaging_and_QA_path_tests": 9,
+    "python_tests": 44,
+    "python_subtests": 16,
+    "ruff": "passed",
+    "fabricated_MOSS_UI": "expanded preference/race/layout suite passed",
+    "fabricated_capture_UI": "full suite passed after scoping selectors to intended row"
+  },
+  "held": [
+    "macOS real-app/browser exclusion and route/source-restart capture proof; system long capture only with a proven non-monitored source",
+    "iOS real Files/Voice Memos Share Sheet, physical capture/lifecycle and supported UIScene cold-launch acceptance",
+    "Android real SAF/share/export and required physical Pixel/OEM lifecycle acceptance; no physical Pixel available; OPPO lock/task-removal remains prohibited",
+    "Production App installation/launch and public/TestFlight/store/release upload were not performed"
+  ],
+  "source_receipts": "local-eval/closeout-20260906",
+  "linear": [
+    "AX-256",
+    "AX-237"
+  ],
+  "published": false,
+  "latest_physical_preflight": {
+    "checked_at": "2026-09-06T11:15:37.345674+00:00",
+    "scope": "read-only device status; no UI, install, recording, lock, wake or keyguard action",
+    "android": {
+      "model": "OPPO PKH110",
+      "adb": "authorized device",
+      "wakefulness": "Dozing",
+      "keyguard_showing": true,
+      "occluded": false,
+      "physical_pixel_available": false
+    },
+    "ios": {
+      "model": "named iPhone17ProMax",
+      "developer_connection": "responding",
+      "passcode_required_for_developer_connection": false,
+      "unlocked_since_boot": true,
+      "current_UI_unlock_or_share_acceptance_proven": false
+    },
+    "next_action": "Await user coordination for real phone picker/share/lifecycle acceptance; public distribution still separately authorized"
+  },
+  "latest_toolchain_preflight": {
+    "checked_date": "2026-09-06",
+    "latest_stable_tauri": "2.11.5",
+    "latest_stable_runtime_wry": "2.11.4",
+    "released_runtime_tao_requirement": "0.35.0",
+    "locked_tao": "0.35.3",
+    "plan_required_tao_generation": "0.37",
+    "conclusion": "No released Tauri upgrade satisfying the existing UIScene gate was found; no dependency change or rebuild performed",
+    "sources": [
+      "https://github.com/tauri-apps/tauri/releases",
+      "https://raw.githubusercontent.com/tauri-apps/tauri/tauri-runtime-wry-v2.11.4/crates/tauri-runtime-wry/Cargo.toml"
+    ]
+  }
+}

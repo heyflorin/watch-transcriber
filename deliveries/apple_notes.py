@@ -38,8 +38,8 @@ def deliver(note: dict) -> bool:
         input=script, capture_output=True, text=True, timeout=60,
     )
     if result.returncode != 0:
-        print(f"[delivery:apple_notes] error: {result.stderr}")
+        print("[delivery:apple_notes] create failed")
         return False
 
-    print(f"[delivery:apple_notes] created note '{title}' in folder '{folder}'")
+    print("[delivery:apple_notes] note created")
     return True

@@ -5,13 +5,21 @@ __pycache__/
 venv/
 .DS_Store
 state/
+local-eval/
 data/
 data-openai/
 data-senko/
 cclogs/
+.echowall-runtime/
 
 # backfill run artifacts (personal titles + doc tokens)
 scripts/backfill/backfill_ledger.jsonl
 scripts/backfill/*_manifest.json
 desktop/src-tauri/.cargo/
+desktop/plugins/*/.tauri/
+desktop/plugins/*/target/
+desktop/plugins/*/Cargo.lock
 .cargo/
+
+# Local research responses and temporary runtime artifacts are never published.
+tmp/

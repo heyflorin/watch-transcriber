@@ -1,12 +1,17 @@
 {
   "name": "desktop",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "tauri:dev:macos": "tauri dev --config src-tauri/tauri.local.conf.json",
+    "tauri:build:macos": "./scripts/build_macos_app.sh"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2"
+  },
+  "dependencies": {
+    "@tauri-apps/plugin-dialog": "^2.7.3"
   }
 }

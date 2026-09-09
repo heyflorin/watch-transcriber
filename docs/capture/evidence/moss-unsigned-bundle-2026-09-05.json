@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "scope": "unsigned-local-bundle-no-install-or-release",
+  "snapshot": "local-eval/bundles/EchoWall-unsigned-be2a1cae.app",
+  "build_command": "CARGO_NET_OFFLINE=true ECHOWALL_MOSS_CANDIDATE_ENABLED=0 npm run tauri:build:macos -- --target universal-apple-darwin --bundles app --no-sign --ci",
+  "architectures": ["arm64", "x86_64"],
+  "moss_default_enabled": false,
+  "builder_paths_detected": false,
+  "binaries": {
+    "desktop": "be2a1cae5543c3d469fea96d33314a4ea5fd9afa2b2ea7f1e91c668a66efbf48",
+    "echowall-diarization-worker": "ab8feb709409009da0c4196363c3f3806a07881ee19a9fe9887be137dbafb4b9",
+    "echowall-moss-worker": "79f7e9136ba65575021bfe5ef249cfc934008541793d2e940837baf6b26d4a64",
+    "echowall-qwen-worker": "450eab191bf8f412e8b95476288fd3492c9cc0e235a6e899a1614d6f2109ebef",
+    "echowall-summary-worker": "6db89faa8c2eb931df26034ef9385472a45a4e521a471c50d3b0fce4c67a1c4b",
+    "echowall-whisper-worker": "946309cc16c7268fb4cef496f23353e8a3193ec83a2ee2cd504e72d8351ef684"
+  },
+  "moss_route_owner_support": ["echowall-moss-worker", "echowall-diarization-worker", "echowall-summary-worker"],
+  "release_gate": {
+    "passed": false,
+    "first_failure": "local inference worker signature is invalid: echowall-whisper-worker",
+    "reason": "built deliberately with --no-sign; not a signing or notarization attestation"
+  },
+  "installed_app_changed": false,
+  "app_launched": false,
+  "uploaded": false
+}

@@ -23,12 +23,17 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
-from deliveries import archive_root, manifest, viewer  # noqa: E402
+from deliveries import archive_mutation_lock, archive_root, manifest, viewer  # noqa: E402
 
 
 def apply_keys(keys: list[str] | None = None, rebuild_viewer: bool = True) -> int:
     """Rewrite transcript labels for the given manifest keys (None = all).
     Returns the number of note files changed."""
+    with archive_mutation_lock():
+        return _apply_keys(keys, rebuild_viewer=rebuild_viewer)
+
+
+def _apply_keys(keys: list[str] | None = None, rebuild_viewer: bool = True) -> int:
     m = manifest.load()
     changed = 0
     for key in keys if keys is not None else list(m):

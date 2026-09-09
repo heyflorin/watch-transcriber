@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-finalize-mobile-capture"
+description = "Enables the finalize_mobile_capture command without any pre-configured scope."
+commands.allow = ["finalize_mobile_capture"]
+
+[[permission]]
+identifier = "deny-finalize-mobile-capture"
+description = "Denies the finalize_mobile_capture command without any pre-configured scope."
+commands.deny = ["finalize_mobile_capture"]

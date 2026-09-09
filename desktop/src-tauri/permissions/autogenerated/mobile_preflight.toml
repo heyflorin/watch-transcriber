@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-mobile-preflight"
+description = "Enables the mobile_preflight command without any pre-configured scope."
+commands.allow = ["mobile_preflight"]
+
+[[permission]]
+identifier = "deny-mobile-preflight"
+description = "Denies the mobile_preflight command without any pre-configured scope."
+commands.deny = ["mobile_preflight"]

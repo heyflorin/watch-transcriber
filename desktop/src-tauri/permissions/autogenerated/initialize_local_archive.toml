@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-initialize-local-archive"
+description = "Enables the initialize_local_archive command without any pre-configured scope."
+commands.allow = ["initialize_local_archive"]
+
+[[permission]]
+identifier = "deny-initialize-local-archive"
+description = "Denies the initialize_local_archive command without any pre-configured scope."
+commands.deny = ["initialize_local_archive"]

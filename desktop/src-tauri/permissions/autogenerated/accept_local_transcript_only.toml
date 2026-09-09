@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-accept-local-transcript-only"
+description = "Enables the accept_local_transcript_only command without any pre-configured scope."
+commands.allow = ["accept_local_transcript_only"]
+
+[[permission]]
+identifier = "deny-accept-local-transcript-only"
+description = "Denies the accept_local_transcript_only command without any pre-configured scope."
+commands.deny = ["accept_local_transcript_only"]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-export-recording-original"
+description = "Enables the export_recording_original command without any pre-configured scope."
+commands.allow = ["export_recording_original"]
+
+[[permission]]
+identifier = "deny-export-recording-original"
+description = "Denies the export_recording_original command without any pre-configured scope."
+commands.deny = ["export_recording_original"]

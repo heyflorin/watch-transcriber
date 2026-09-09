@@ -1,0 +1,19 @@
+[package]
+name = "echowall-local-audio"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+rubato = "=0.16.2"
+mp4parse = "=0.17.0"
+symphonia = { version = "0.6.1", default-features = false, features = ["aac", "isomp4", "mp3", "pcm", "wav"] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = "deny"

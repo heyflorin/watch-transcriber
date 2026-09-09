@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-process-recording-with-local-models"
+description = "Enables the process_recording_with_local_models command without any pre-configured scope."
+commands.allow = ["process_recording_with_local_models"]
+
+[[permission]]
+identifier = "deny-process-recording-with-local-models"
+description = "Denies the process_recording_with_local_models command without any pre-configured scope."
+commands.deny = ["process_recording_with_local_models"]

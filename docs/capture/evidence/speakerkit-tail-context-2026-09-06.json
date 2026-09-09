@@ -1,0 +1,551 @@
+{
+  "scope": "one-public-mixed_05-full-real-context-hypothesis-test-not-product-or-corpus-acceptance",
+  "metric_scope": "Only DER/JER/count/coverage are meaningful for placeholder-text diarization artifacts; WER/CER/terms and whole-matrix policy booleans are not quality claims.",
+  "baseline_speaker_count": 6,
+  "full_context_speaker_count": 5,
+  "baseline_segments": 219,
+  "full_context_segments": 218,
+  "baseline_stage_counts": [
+    20,
+    6,
+    6
+  ],
+  "full_context_stage_counts": [
+    19,
+    5,
+    5
+  ],
+  "hypothesis_prediction_passed": true,
+  "exact_source_pcm_verified": true,
+  "inference_inputs": {
+    "baseline_final_model_input_pcm_sha256": "5f730eebfec9cdb218fa5d64ef1cc8f98e87415b2f5e8c1adeab91c9ef4ddb3d",
+    "full_context_final_model_input_pcm_sha256": "dccac6eb85f0a2254dbc526fb2781bdadd4b379372c4906c5784672b2106f60d",
+    "request_sha256": "7df86d5f94d750e532688932eac381ddae10038d53653a7b250e1dfbd4962b28",
+    "source_audio_sha256": "2f4a524c4df6e6c86d0eb889078ba281f9883590790e01618d1a8592869a1eb8"
+  },
+  "last_chunk_start_seconds": 696.1725625,
+  "last_chunk_end_seconds": 726.1725625,
+  "artificial_padding_frames": 0,
+  "metrics": {
+    "baseline": {
+      "der": 0.12649926403077955,
+      "exact_speaker_count": 0.0,
+      "jer": 0.12381925830284761,
+      "timestamp_coverage": 0.901715318361339
+    },
+    "full_context": {
+      "der": 0.12015972718131075,
+      "exact_speaker_count": 1.0,
+      "jer": 0.12105528439533439,
+      "timestamp_coverage": 0.9017444656571987
+    },
+    "miaoji": {
+      "der": 0.09322762580701575,
+      "exact_speaker_count": 1.0,
+      "jer": 0.10099290375279575,
+      "timestamp_coverage": 0.9398254076978009
+    }
+  },
+  "limits": "Changing final context eliminates this tail speaker split; the probe does not isolate mean normalization from all other context effects or validate a production tail policy across the corpus.",
+  "schema_version": 1,
+  "observed_at_utc": "2026-09-06T07:17:28.636712+00:00",
+  "offset_proof": {
+    "all21_final_chunk_window_offsets_exact": true,
+    "all35_model_chunks_have480000_real_frames": true,
+    "chunk_union_covers_original_pcm_without_gaps": true,
+    "final_chunk_end_frame_exclusive": 11618761,
+    "final_chunk_end_seconds": 726.1725625,
+    "final_chunk_overlap_with_preceding_frames": 429239,
+    "final_chunk_start_frame": 11138761,
+    "final_chunk_start_seconds": 696.1725625,
+    "final_pcm_sha256": "dccac6eb85f0a2254dbc526fb2781bdadd4b379372c4906c5784672b2106f60d",
+    "first34_chunk_geometries_unchanged": true,
+    "last_embedding_window_end_seconds": 726.1725625,
+    "preceding_chunk_end_frame_exclusive": 11568000,
+    "prefix_comparison": {
+      "changed_labeled_frames": 0,
+      "end_ms_exclusive": 696170,
+      "grid_ms": 10,
+      "scope": "same canonical speaker slots; independent of the official optimally-mapped DER",
+      "start_ms": 0
+    },
+    "source_pcm_sha256": "11c79bdbb7523cab28862b8e02fc8135bd0394bbbf6937fdb96c7d738da11e31",
+    "timestamp_limit": "Diarization publication remains quantized to the existing model frame grid (589 frames per10seconds); the changed chunk uses the exact source offset before that quantization.",
+    "verification_source_sha256": "16ad5b8f51ee5eaf1a10f95e00e287ba16f383d1b55cc11cc692f8ce6bc9c507"
+  },
+  "implementation_status": "new MOSS preparations now pin tailv2; retainedprep1 andprep2/v1 remainv1, separatecatalogdefaultv1 unchanged; releaseworker rebuilding and final verification pending",
+  "artifacts": [
+    {
+      "path": "local-eval/matrix/diagnostics/mixed-resume/full-context/diagnosis.md",
+      "sha256": "6c2b3a4f94c489a75e8d9d2f08b244bd8818528155834d73a25d59d873b4472f"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/mixed-resume/full-context/summary.json",
+      "sha256": "91b428590270fe41b1f3cdd16c7e25e7ad35ca3b66ce2dbad092db08ed7a19c8"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/mixed-resume/full-context/offset-proof.json",
+      "sha256": "0397de07f259deb58581316bd2ccc02ec82e223ef235c317396c641adec4a4ee"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/mixed-resume/full-context/context-change.json",
+      "sha256": "ee8898f8f2d5261193fcad7e46f6e5b274ce8e2d9f0f562d01bf7c4926da62c6"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/mixed-resume/full-context/started.json",
+      "sha256": "5cb22dad047a709bf5bb577bbd47519dd4f5981a3194a302423d6a243b6769c7"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/mixed-resume/full-context/completed.json",
+      "sha256": "e0d7dd8a280a0121ea918d564e2c8f05cc565af348ae84f9709b989c1d50ef8b"
+    },
+    {
+      "path": "local-eval/matrix/diagnostics/mixed-resume/full-context/context-only.diff",
+      "sha256": "534b821724ba1064db38eda61de694fc7f369487a801fb17d36d3c4bf71b9ab1"
+    }
+  ],
+  "native_v2_pre_aggregation_fix": {
+    "geometry_tests_passed": 12,
+    "v1_exact_original_anchor_replay": true,
+    "v2_exact_context_probe_replay": true,
+    "binary_sha256": "642daee577e45f537717c43d4bd17cca4c3ab7cf2e2b6b11aa3344ba1bd96d47",
+    "record": "local-eval/matrix/diagnostics/mixed-resume/native-v2-source-20260906/replay-summary.json"
+  },
+  "review_findings": [
+    {
+      "severity": "high",
+      "boundary": "postProcess denominator grouping",
+      "cause": "quantized start time merges different physical windows; numerator and denominator count different observations",
+      "reproduction": "496001 source frames: offsets16000/16001 project58; activity[0,1,0] wrongly1/2 rather than1/3",
+      "state": "fixed_and_independently_rechecked"
+    },
+    {
+      "severity": "medium",
+      "boundary": "VBx sort",
+      "cause": "coincident origins lack deterministic physical-window tiebreak",
+      "state": "fixed_and_independently_rechecked"
+    }
+  ],
+  "first_matrix_attempt": {
+    "root": "local-eval/matrix/outputs/speakerkit-tail-context-v2/run-db8n3f4n",
+    "status": "terminated_harness_UUID_string_comparison",
+    "native_response_retained": 1,
+    "runner_and_failed_record_preserved": true,
+    "harness_semantic_fix_verified": true,
+    "restart_rule": "wait for native aggregation/tie fix and tests; new immutable binary/run, no duplicate live process"
+  },
+  "rust_contract_validation": {
+    "protocol_tests_passed": 13,
+    "App_plan_policy_tests_passed": 6,
+    "plan1_or2_reject_new_diarization_preset": true,
+    "plan3_new_preset_changes_plan_and_anchor_request_hash_only": true,
+    "clippy_lib_tests_examples": "passed",
+    "App_and_catalog_default": "v1"
+  },
+  "native_v2_aggregation_fix": {
+    "production_geometry_aggregation_ordering_tests_passed": 21,
+    "v1_exact_original_anchor_replay": true,
+    "v2_timing_and_slots_unchanged_from_prior_probe": true,
+    "v2_confidence_fields_changed": 1,
+    "v2_speaker_count": 5,
+    "v2_segments": 218,
+    "binary_sha256": "ff120dbd199421ac212105fed595857da022819fccf9ae9428daed4186ba35a9",
+    "artifact_root": "local-eval/matrix/diagnostics/mixed-resume/native-v2-aggregation-fix-20260906",
+    "review": "two findings resolved; no model inference by reviewer"
+  },
+  "native_matrix": {
+    "root": "local-eval/matrix/outputs/speakerkit-tail-context-v2/run-fvnxhhlz",
+    "status": "completed",
+    "attempted_cases": 44,
+    "successful_cases": 44,
+    "protocol_validated_cases": 44,
+    "diarization_segments": 8206,
+    "inference_seconds_sum": 261.122,
+    "worker_sha256": "ff120dbd199421ac212105fed595857da022819fccf9ae9428daed4186ba35a9",
+    "diarization_only_comparison": {
+      "english": {
+        "cases": 10,
+        "sufficient_corpus": true,
+        "local": {
+          "der": 0.1860087103359231,
+          "jer": 0.23021025887159802,
+          "exact_speaker_count": 1.0,
+          "timestamp_coverage": 0.9716814267335512
+        },
+        "miaoji": {
+          "der": 0.3726031111350944,
+          "jer": 0.5221999824947695,
+          "exact_speaker_count": 0.3,
+          "timestamp_coverage": 0.8341632850521702
+        }
+      },
+      "long_form": {
+        "cases": 4,
+        "sufficient_corpus": true,
+        "local": {
+          "der": 0.21017069749202572,
+          "jer": 0.3314258109175962,
+          "exact_speaker_count": 0.5,
+          "timestamp_coverage": 0.9722856247291515
+        },
+        "miaoji": {
+          "der": 0.41432222076983444,
+          "jer": 0.4995384607933776,
+          "exact_speaker_count": 0.25,
+          "timestamp_coverage": 0.7610479890945351
+        }
+      },
+      "mandarin": {
+        "cases": 10,
+        "sufficient_corpus": true,
+        "local": {
+          "der": 0.11995153638659556,
+          "jer": 0.3302292640534704,
+          "exact_speaker_count": 0.3,
+          "timestamp_coverage": 0.98520872185391
+        },
+        "miaoji": {
+          "der": 0.20353626107042916,
+          "jer": 0.42522242691331164,
+          "exact_speaker_count": 0.1,
+          "timestamp_coverage": 0.9224373630941912
+        }
+      },
+      "mixed": {
+        "cases": 10,
+        "sufficient_corpus": true,
+        "local": {
+          "der": 0.1918265648354319,
+          "jer": 0.2206792890899936,
+          "exact_speaker_count": 0.8,
+          "timestamp_coverage": 0.9279949523562746
+        },
+        "miaoji": {
+          "der": 0.20263478804434548,
+          "jer": 0.24337062101083626,
+          "exact_speaker_count": 0.8,
+          "timestamp_coverage": 0.9257975877298925
+        }
+      },
+      "overlap": {
+        "cases": 10,
+        "sufficient_corpus": true,
+        "local": {
+          "der": 0.4892564814612351,
+          "jer": 0.5526904576696712,
+          "exact_speaker_count": 0.7,
+          "timestamp_coverage": 0.9438388117963488
+        },
+        "miaoji": {
+          "der": 0.7081939372735953,
+          "jer": 0.8118996465080339,
+          "exact_speaker_count": 0.0,
+          "timestamp_coverage": 0.7269297598362412
+        }
+      }
+    },
+    "scope": "diarization-metrics-only-placeholder-text",
+    "completed_sha256": "71f03af37f911bfc0594c66085c643ad4112caf0dd8230e92498e468af0471fb",
+    "score_snapshot": "local-eval/matrix/outputs/speakerkit-tail-context-v2/run-fvnxhhlz/scores/8535b88677eae6675178d10e-diarization-all.json",
+    "score_sha256": "ab7b94977ef2decf13d1e379114b5db212b2f15f2cb8d361d544630b82dd0ac5"
+  },
+  "App_finalizer_replay": {
+    "scope": "retained-ASR-fresh-anchors-App-finalizer-replay-not-new-inference",
+    "successful_cases": 42,
+    "retained_MOSS_failures": 2,
+    "segments": 8440,
+    "unknown_segments": 1,
+    "comparison": {
+      "schema_version": 2,
+      "acceptance_policy": "miaoji-relative-v2",
+      "scope": "transcript_metrics_only",
+      "status": "insufficient_corpus",
+      "strata": {
+        "english": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7200640,
+          "miaoji": {
+            "wer": 0.2527979495941905,
+            "cer": 0.18302856948275276,
+            "der": 0.3726031111350944,
+            "jer": 0.5221999824947695,
+            "exact_speaker_count": 0.3,
+            "named_term_recall": 0.5,
+            "timestamp_coverage": 0.8341632850521702,
+            "adjacent_duplicate_rate": 0.0
+          },
+          "local": {
+            "wer": 0.16706535668517727,
+            "cer": 0.11935165321619505,
+            "der": 0.21907455642173398,
+            "jer": 0.26531906828931684,
+            "exact_speaker_count": 0.8,
+            "named_term_recall": 0.9,
+            "timestamp_coverage": 0.9173197163259108,
+            "adjacent_duplicate_rate": 0.0006105006105006105
+          }
+        },
+        "long_form": {
+          "sufficient": false,
+          "passed": false,
+          "failure_codes": [
+            "insufficient_corpus"
+          ],
+          "cases": 3,
+          "duration_ms": 16200192,
+          "miaoji": {
+            "wer": 0.3220074526864548,
+            "cer": 0.2434891014278201,
+            "der": 0.382968575781811,
+            "jer": 0.48821717390058966,
+            "exact_speaker_count": 0.3333333333333333,
+            "named_term_recall": 1.0,
+            "timestamp_coverage": 0.7755248309729611,
+            "adjacent_duplicate_rate": 0.0
+          },
+          "local": {
+            "wer": 0.22269948785726087,
+            "cer": 0.15554570777412002,
+            "der": 0.2257394878021728,
+            "jer": 0.34095294393108105,
+            "exact_speaker_count": 0.3333333333333333,
+            "named_term_recall": 1.0,
+            "timestamp_coverage": 0.9527947955270363,
+            "adjacent_duplicate_rate": 0.0
+          }
+        },
+        "mandarin": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7200640,
+          "miaoji": {
+            "wer": 0.16378068687385974,
+            "cer": 0.1641490110734174,
+            "der": 0.20353626107042916,
+            "jer": 0.42522242691331164,
+            "exact_speaker_count": 0.1,
+            "named_term_recall": 1.0,
+            "timestamp_coverage": 0.9224373630941912,
+            "adjacent_duplicate_rate": 0.0
+          },
+          "local": {
+            "wer": 0.15613097333802772,
+            "cer": 0.15611598284580427,
+            "der": 0.09556964529601417,
+            "jer": 0.20237575722592366,
+            "exact_speaker_count": 0.6,
+            "named_term_recall": 1.0,
+            "timestamp_coverage": 0.9682385791302857,
+            "adjacent_duplicate_rate": 0.009811937857726901
+          }
+        },
+        "mixed": {
+          "sufficient": true,
+          "passed": false,
+          "failure_codes": [
+            "named_term_recall"
+          ],
+          "cases": 10,
+          "duration_ms": 7225408,
+          "miaoji": {
+            "wer": 0.11623766208631701,
+            "cer": 0.09301480800871814,
+            "der": 0.20263478804434548,
+            "jer": 0.24337062101083626,
+            "exact_speaker_count": 0.8,
+            "named_term_recall": 1.0,
+            "timestamp_coverage": 0.9257975877298925,
+            "adjacent_duplicate_rate": 0.0
+          },
+          "local": {
+            "wer": 0.10257402748209793,
+            "cer": 0.08023675719566657,
+            "der": 0.1597400639153495,
+            "jer": 0.17141844505969275,
+            "exact_speaker_count": 0.8,
+            "named_term_recall": 0.9,
+            "timestamp_coverage": 0.9803627920730913,
+            "adjacent_duplicate_rate": 0.001081081081081081
+          }
+        },
+        "overlap": {
+          "sufficient": false,
+          "passed": false,
+          "failure_codes": [
+            "insufficient_corpus"
+          ],
+          "cases": 9,
+          "duration_ms": 1620864,
+          "miaoji": {
+            "wer": 0.4667585256631071,
+            "cer": 0.39578488372093024,
+            "der": 0.6971432741070451,
+            "jer": 0.801256017487559,
+            "exact_speaker_count": 0.0,
+            "named_term_recall": 0.6666666666666666,
+            "timestamp_coverage": 0.7265091586217826,
+            "adjacent_duplicate_rate": 0.007079646017699115
+          },
+          "local": {
+            "wer": 0.3563554943162246,
+            "cer": 0.29704457364341086,
+            "der": 0.46082997879852927,
+            "jer": 0.49841753147684503,
+            "exact_speaker_count": 0.6666666666666666,
+            "named_term_recall": 0.8888888888888888,
+            "timestamp_coverage": 0.8479615958584805,
+            "adjacent_duplicate_rate": 0.01023391812865497
+          }
+        }
+      },
+      "stretch": {
+        "target": "exact_speaker_count_per_stratum",
+        "minimum_accuracy": 0.95,
+        "status": "insufficient_corpus",
+        "strata": {
+          "english": false,
+          "long_form": null,
+          "mandarin": false,
+          "mixed": false,
+          "overlap": null
+        }
+      }
+    },
+    "lexical_assignment": {
+      "schema_version": 1,
+      "scope": "speaker_lexical_assignment_only",
+      "tokenizer": "wer-unicode-alphanumeric-han-v1",
+      "minimum_per_case": 0.99,
+      "status": "insufficient_corpus",
+      "strata": {
+        "english": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7200640,
+          "local": {
+            "lexical_tokens": 21378,
+            "assigned_tokens": 21378,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 19573,
+            "assigned_tokens": 19573,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        },
+        "long_form": {
+          "sufficient": false,
+          "passed": false,
+          "failure_codes": [
+            "insufficient_corpus"
+          ],
+          "cases": 3,
+          "duration_ms": 16200192,
+          "local": {
+            "lexical_tokens": 47651,
+            "assigned_tokens": 47651,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 44452,
+            "assigned_tokens": 44452,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        },
+        "mandarin": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7200640,
+          "local": {
+            "lexical_tokens": 31050,
+            "assigned_tokens": 31044,
+            "assigned_fraction": 0.9998067632850242,
+            "minimum_case_fraction": 0.9979729729729729,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 29930,
+            "assigned_tokens": 29930,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        },
+        "mixed": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7225408,
+          "local": {
+            "lexical_tokens": 25628,
+            "assigned_tokens": 25628,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 24975,
+            "assigned_tokens": 24975,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        },
+        "overlap": {
+          "sufficient": false,
+          "passed": false,
+          "failure_codes": [
+            "insufficient_corpus"
+          ],
+          "cases": 9,
+          "duration_ms": 1620864,
+          "local": {
+            "lexical_tokens": 4687,
+            "assigned_tokens": 4687,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 3904,
+            "assigned_tokens": 3904,
+            "assigned_fraction": 1.0,
+            "minimum_case_fraction": 1.0,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        }
+      }
+    },
+    "snapshot": "local-eval/matrix/outputs/speakerkit-tail-context-v2/run-fvnxhhlz/scores/f6af65f8a52480ad6895226c-moss-all.json",
+    "snapshot_sha256": "91913dc9566e517bd816cb157df21504b1bc0918f3a7b33fc81c86fded0b6ea0",
+    "raw_request_encoding": "sorted pretty Python JSON; synthetic replay binding records canonical Rust request hash separately"
+  }
+}

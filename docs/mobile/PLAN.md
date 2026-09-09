@@ -1,4 +1,12 @@
-# MOBILE-0: EchoWall iOS + Android port (read-only, direct-pull sync)
+# MOBILE-0: EchoWall iOS + Android port (historical read-only milestone)
+
+> Status update (2026-09-02): this document remains the implementation record
+> for the original read-only mobile viewer. New recording, direct import,
+> embedded processing, write credentials, release scope, and acceptance are
+> governed by `docs/capture/PLAN.md` and `docs/capture/EXECUTOR-GOAL.md`. Where
+> this file says recording/write-back is out of scope or processing runs on a
+> Mac worker, that describes the completed 2026-07 milestone, not the current
+> architecture.
 
 Owner decisions (AX, 2026-07-28): sync = **direct-pull from existing backups**
 (GitHub notes-repo tarball + R2 audio, read-only tokens on device);
@@ -44,7 +52,7 @@ viewer with demo data on iOS simulator + Android emulator.
 
 ## MOBILE-2: Sync core (Rust, in `desktop/src-tauri`)
 
-Token entry UI (minimal settings pane in the bootstrap page) → Keychain/
+Token entry UI (minimal first-run setup page) → Keychain/
 Keystore; pull pipeline: tarball download+extract → local `data/` in app
 sandbox → manifest-driven R2 audio streaming with Range + LRU cache (cap
 ~500MB) + pin-offline per recording; manual refresh + pull-to-refresh.
@@ -133,6 +141,62 @@ release notes.
 - Auto background sync — v1 syncs on launch + pull-to-refresh only.
 - Write-back (tags/attachments/delete), recording-upload, store listing —
   explicitly out per AX's v1 scope decision.
+
+## Processing-layer feasibility on iPhone (updated 2026-09-02)
+
+The default provider route is much smaller than the fallback code suggests:
+
+```text
+App record / explicit share / direct import
+  → embedded Rust durable queue → Volcano TOS → 妙记 API
+    → Gemini title/summary → GitHub/R2 archive
+```
+
+妙记 performs transcription and speaker diarization server-side. The active
+configuration has `LARK_TRIM_LONG_SILENCE=0`; Senko, pyannote, local speaker
+reconciliation, and chunked Gemini/OpenAI transcription are not part of this
+route. Gemini title/summary generation and deliveries are downstream steps.
+
+The blocker to automatically ingesting arbitrary Voice Memos is input discovery,
+not compute. Processing itself now belongs to the Rust core inside the App:
+
+- An iOS app cannot scan Voice Memos' private app container, even while our app
+  is open. Opening EchoWall therefore cannot discover newly synced Voice Memos.
+- Shortcuts has no documented "new Voice Memo" personal-automation trigger.
+  An App-closed trigger only fires when the selected iPhone app is actually
+  closed; a Watch recording syncing silently to iPhone does not create that
+  event.
+- iOS background execution can finish an upload or a user-started task, but it
+  does not grant access to Voice Memos or provide a filesystem watch. Scheduled
+  processing is discretionary and may start hours later.
+
+Viable acquisition paths, in order:
+
+1. **Share to EchoWall** — add a share extension that receives the selected
+   `.m4a` from Voice Memos into an App Group inbox. EchoWall can upload it
+   immediately or scan the inbox on next launch. This is reliable but requires
+   one explicit Share action per recording.
+2. **Export to a watched Files folder** — a Shortcut or manual export saves the
+   recording to an EchoWall/iCloud Drive folder. EchoWall scans that folder on
+   launch. This removes file picking inside EchoWall, but Voice Memos still
+   needs an explicit export because there is no new-recording trigger.
+3. **Own the recording flow** — record through EchoWall on iPhone so the audio
+   starts inside a container we control. This is the Release 1 mobile recorder:
+   Stop creates the same durable envelope and processing job as an import.
+   watchOS-native capture remains outside Release 1.
+
+Implemented direction: retain option 1 as the reliable Voice Memos compatibility
+entry and option 3 as the App-owned recording path. Both feed the embedded Rust
+TOS → 妙记 → Gemini → archive engine; neither requires a Python/FastAPI worker,
+processing broker, always-on Mac, or direct access to Voice Memos' private
+library. Treat background or launch-time discovery of that private library as
+unavailable unless Apple introduces a public API or automation trigger.
+
+Primary references: [iOS app containers](https://developer.apple.com/documentation/technologyoverviews/files-and-directories),
+[Shortcuts setting triggers](https://support.apple.com/guide/shortcuts/apde31e9638b/ios),
+[Voice Memos export](https://support.apple.com/guide/iphone/iph831c37815/ios),
+[Background Tasks](https://developer.apple.com/documentation/backgroundtasks),
+and [background URLSession transfers](https://developer.apple.com/documentation/foundation/downloading-files-in-the-background).
 
 ## Design review verdict (2026-07-28, autonomous per big-task Phase -1)
 
@@ -289,7 +353,9 @@ revoking the live test token; UI path exists (pill → 重新配置 → /setup).
 Distribution chain, API-first as planned: bundle id `ai.ax.watch-transcriber`
 registered (`ZD9JAFU449`), **Apple Distribution cert created via ASC API**
 (`R9L48TR57V` — resolves open unknown #4: only Developer ID is
-Account-Holder-gated), "EchoWall App Store" profile (`DZMX2B7NBZ`), all saved
+Account-Holder-gated), the then-current "EchoWall App Store" profile
+(`DZMX2B7NBZ`, superseded on 2026-09-03 by App-Group-bearing profile
+`8P9GB55H4U` plus Share profile `PHJ9W8T7Q3`), all saved
 to ~/creds/apple with the p12 (WWDR **G3** chain, not the Developer ID G2).
 Android upload keystore → ~/creds/android + gradle signingConfig
 (keystore.properties local / env vars CI) + release cleartext fix + proguard

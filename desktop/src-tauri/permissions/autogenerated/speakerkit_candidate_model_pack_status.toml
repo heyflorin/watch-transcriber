@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-speakerkit-candidate-model-pack-status"
+description = "Enables the speakerkit_candidate_model_pack_status command without any pre-configured scope."
+commands.allow = ["speakerkit_candidate_model_pack_status"]
+
+[[permission]]
+identifier = "deny-speakerkit-candidate-model-pack-status"
+description = "Denies the speakerkit_candidate_model_pack_status command without any pre-configured scope."
+commands.deny = ["speakerkit_candidate_model_pack_status"]

@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-acknowledge-shared-imports"
+description = "Enables the acknowledge_shared_imports command without any pre-configured scope."
+commands.allow = ["acknowledge_shared_imports"]
+
+[[permission]]
+identifier = "deny-acknowledge-shared-imports"
+description = "Denies the acknowledge_shared_imports command without any pre-configured scope."
+commands.deny = ["acknowledge_shared_imports"]

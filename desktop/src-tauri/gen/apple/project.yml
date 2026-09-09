@@ -48,6 +48,14 @@ targets:
         # Only exempt encryption: standard TLS (rustls) + platform keychain.
         ITSAppUsesNonExemptEncryption: false
         UILaunchStoryboardName: LaunchScreen
+        NSMicrophoneUsageDescription: EchoWall records the microphone only after you explicitly start a voice memo or meeting capture.
+        UIBackgroundModes: [audio]
+        LSSupportsOpeningDocumentsInPlace: true
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Audio recording
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Owner
+            LSItemContentTypes: [public.audio]
         UIRequiredDeviceCapabilities: [arm64, metal]
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -58,10 +66,13 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        CFBundleShortVersionString: 0.2.0
-        CFBundleVersion: "2"
+        CFBundleShortVersionString: 0.3.0
+        CFBundleVersion: "3"
     entitlements:
       path: desktop_iOS/desktop_iOS.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.ai.ax.watch-transcriber
     scheme:
       environmentVariables:
         RUST_BACKTRACE: full
@@ -76,6 +87,11 @@ targets:
         ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: true
         EXCLUDED_ARCHS[sdk=iphoneos*]: x86_64
       configs:
+        debug:
+          CODE_SIGN_STYLE: Manual
+          DEVELOPMENT_TEAM: 2T5DG4GZBN
+          CODE_SIGN_IDENTITY: Apple Development
+          PROVISIONING_PROFILE_SPECIFIER: EchoWall Development
         release:
           # Manual App Store signing: cert + profile created via the ASC API
           # (Apple Distribution R9L48TR57V / profile "EchoWall App Store"),
@@ -88,11 +104,14 @@ targets:
     dependencies:
       - framework: libapp.a
         embed: false
+      - target: EchoWallShare
+        embed: true
       - sdk: CoreGraphics.framework
       - sdk: Metal.framework
       - sdk: MetalKit.framework
       - sdk: QuartzCore.framework
       - sdk: Security.framework
+      - sdk: AVFAudio.framework
       - sdk: UIKit.framework
       - sdk: WebKit.framework
     preBuildScripts:
@@ -102,3 +121,42 @@ targets:
         outputFiles:
           - $(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapp.a
           - $(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapp.a
+  EchoWallShare:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: ShareExtension
+    info:
+      path: ShareExtension/Info.plist
+      properties:
+        CFBundleDisplayName: EchoWall
+        CFBundleShortVersionString: 0.3.0
+        CFBundleVersion: "3"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShareViewController
+          NSExtensionAttributes:
+            NSExtensionActivationRule:
+              NSExtensionActivationSupportsFileWithMaxCount: 16
+    entitlements:
+      path: ShareExtension/EchoWallShare.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.ai.ax.watch-transcriber
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ai.ax.watch-transcriber.share
+        PRODUCT_NAME: EchoWallShare
+        SKIP_INSTALL: true
+        APPLICATION_EXTENSION_API_ONLY: true
+        DEVELOPMENT_TEAM: 2T5DG4GZBN
+      configs:
+        debug:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Development
+          PROVISIONING_PROFILE_SPECIFIER: EchoWall Share Development
+        release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: EchoWall Share App Store

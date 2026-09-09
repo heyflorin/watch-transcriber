@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-runtime-features"
+description = "Enables the runtime_features command without any pre-configured scope."
+commands.allow = ["runtime_features"]
+
+[[permission]]
+identifier = "deny-runtime-features"
+description = "Denies the runtime_features command without any pre-configured scope."
+commands.deny = ["runtime_features"]

@@ -27,13 +27,25 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
-from deliveries import archive_git, archive_root, manifest, r2_backup, viewer  # noqa: E402
+from deliveries import (  # noqa: E402
+    archive_git,
+    archive_mutation_lock,
+    archive_root,
+    manifest,
+    r2_backup,
+    viewer,
+)
 from deliveries.local_archive import _build_daily_md, _md_to_html  # noqa: E402
 
 LEDGER = REPO_ROOT / "state" / "r2_uploaded.json"
 
 
 def delete_recording(key: str, dry_run: bool = False, keep_r2: bool = False) -> dict:
+    with archive_mutation_lock():
+        return _delete_recording(key, dry_run=dry_run, keep_r2=keep_r2)
+
+
+def _delete_recording(key: str, dry_run: bool = False, keep_r2: bool = False) -> dict:
     m = manifest.load()
     entry = m.get(key)
     if not entry:

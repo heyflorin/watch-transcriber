@@ -1,0 +1,296 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/xingfanxia/watch-transcriber/schemas/recording-envelope-v1.json",
+  "title": "EchoWall RecordingEnvelope v1",
+  "description": "Replayable boundary artifact produced by every recording and import adapter.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "recording_id",
+    "source",
+    "captured_at",
+    "ended_at",
+    "duration_ms",
+    "tracks",
+    "normalized_audio",
+    "normalized_sha256",
+    "imported_name",
+    "capture_warnings",
+    "job"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "recording_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 86400000
+    },
+    "tracks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/track"
+      }
+    },
+    "normalized_audio": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/relative_path"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "normalized_sha256": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/sha256"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "imported_name": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "import_review": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/import_review"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "capture_warnings": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {
+        "$ref": "#/$defs/warning"
+      }
+    },
+    "job": {
+      "$ref": "#/$defs/job"
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "platform", "label", "capture_scope"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "voice_memos_watch",
+            "voice_memos_share",
+            "desktop_voice_memo",
+            "desktop_meeting",
+            "desktop_system",
+            "mobile_voice_memo",
+            "file_import"
+          ]
+        },
+        "platform": {
+          "enum": ["macos", "windows", "ios", "android"]
+        },
+        "label": {
+          "type": ["string", "null"],
+          "maxLength": 512
+        },
+        "capture_scope": {
+          "enum": [
+            "microphone",
+            "application",
+            "process_tree",
+            "browser_tab",
+            "browser_application",
+            "system",
+            "imported_file"
+          ]
+        }
+      }
+    },
+    "track": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "relative_path",
+        "codec",
+        "sample_rate",
+        "channels",
+        "duration_ms",
+        "clock_start_ns",
+        "sha256"
+      ],
+      "properties": {
+        "role": {
+          "enum": ["microphone", "system", "mixed", "imported"]
+        },
+        "relative_path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "codec": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "sample_rate": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 768000
+        },
+        "channels": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "clock_start_ns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "warning": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "at_ms"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{1,63}$"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "at_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "import_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timestamp_source",
+        "timestamp_confidence",
+        "display_title",
+        "speaker_count",
+        "confirmed_at"
+      ],
+      "properties": {
+        "timestamp_source": {
+          "enum": ["embedded_metadata", "filename", "file_mtime", "user"]
+        },
+        "timestamp_confidence": {
+          "enum": ["high", "medium", "low", "user_confirmed"]
+        },
+        "display_title": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "speaker_count": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "maximum": 50
+        },
+        "confirmed_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "attempt", "remote_job_id", "last_error"],
+      "properties": {
+        "state": {
+          "enum": [
+            "draft",
+            "recording",
+            "importing",
+            "finalizing",
+            "ready",
+            "uploading",
+            "queued",
+            "transcribing",
+            "submitting",
+            "summarizing",
+            "publishing",
+            "complete",
+            "interrupted",
+            "offline",
+            "upload_failed",
+            "provider_failed",
+            "publish_failed",
+            "publish_ambiguous",
+            "submit_ambiguous",
+            "recovered",
+            "canceled_before_upload",
+            "canceled_after_upload"
+          ]
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "remote_job_id": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "last_error": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      }
+    },
+    "relative_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\).+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

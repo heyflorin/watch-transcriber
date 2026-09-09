@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-adopt-mobile-imports"
+description = "Enables the adopt_mobile_imports command without any pre-configured scope."
+commands.allow = ["adopt_mobile_imports"]
+
+[[permission]]
+identifier = "deny-adopt-mobile-imports"
+description = "Denies the adopt_mobile_imports command without any pre-configured scope."
+commands.deny = ["adopt_mobile_imports"]

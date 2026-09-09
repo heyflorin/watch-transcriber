@@ -35,6 +35,7 @@ import shutil
 import time
 import uuid
 from pathlib import Path
+from typing import Callable, Mapping
 from urllib.parse import urlparse
 
 import requests
@@ -70,6 +71,19 @@ _UPLOAD_TASKS = int(os.environ.get("LARK_UPLOAD_TASKS", "8"))
 
 class LarkError(RuntimeError):
     """妙记 / TOS failure — raised loud with context, never swallowed."""
+
+
+class LarkSubmitAmbiguousError(LarkError):
+    """The submit connection failed after the provider may have accepted it.
+
+    Callers must reconcile the already-persisted request ID rather than submit
+    again with a new ID.  The message is deliberately constant so request
+    URLs, signed query strings, API keys, and transport details cannot leak.
+    """
+
+
+class LarkSubmitRejectedError(LarkError):
+    """The provider explicitly rejected a submit before accepting a task."""
 
 
 def _autoload_env() -> None:
@@ -182,8 +196,10 @@ def _tos_client():
         raise LarkError("tos SDK not installed in this venv — `pip install tos`") from e
     try:
         return tos.TosClientV2(
-            _env("VOLC_TOS_ACCESS_KEY"), _env("VOLC_TOS_SECRET_KEY"),
-            _env("VOLC_TOS_ENDPOINT"), _env("VOLC_TOS_REGION"),
+            _env("VOLC_TOS_ACCESS_KEY"),
+            _env("VOLC_TOS_SECRET_KEY"),
+            _env("VOLC_TOS_ENDPOINT"),
+            _env("VOLC_TOS_REGION"),
         )
     except LarkError:
         raise  # missing-cred errors already carry context
@@ -199,17 +215,26 @@ def _tos_upload(client, mp3: Path) -> str:
     size_mb = mp3.stat().st_size / 1048576
     t0 = time.time()
     if mp3.stat().st_size > _PART_SIZE:
-        client.upload_file(bucket, key, str(mp3), task_num=_UPLOAD_TASKS, part_size=_PART_SIZE)
+        client.upload_file(
+            bucket, key, str(mp3), task_num=_UPLOAD_TASKS, part_size=_PART_SIZE
+        )
     else:
         client.put_object_from_file(bucket, key, str(mp3))
-    print(f"  [妙记] uploaded {size_mb:.1f}MB to TOS in {time.time()-t0:.0f}s", flush=True)
+    print(
+        f"  [妙记] uploaded {size_mb:.1f}MB to TOS in {time.time() - t0:.0f}s",
+        flush=True,
+    )
     return key
 
 
 def _tos_presign(client, key: str) -> str:
     import tos
+
     pre = client.pre_signed_url(
-        tos.HttpMethodType.Http_Method_Get, _env("VOLC_TOS_BUCKET"), key, expires=7200,
+        tos.HttpMethodType.Http_Method_Get,
+        _env("VOLC_TOS_BUCKET"),
+        key,
+        expires=7200,
     )
     return pre.signed_url
 
@@ -217,7 +242,9 @@ def _tos_presign(client, key: str) -> str:
 def _tos_delete(client, key: str) -> None:
     try:
         client.delete_object(_env("VOLC_TOS_BUCKET"), key)
-    except Exception as e:  # cleanup is best-effort; don't fail the transcription over it
+    except (
+        Exception
+    ) as e:  # cleanup is best-effort; don't fail the transcription over it
         print(f"  [妙记] WARN: failed to delete TOS object {key}: {e}", flush=True)
 
 
@@ -250,10 +277,33 @@ def _guard_fetch_url(url: str) -> None:
         raise LarkError(f"妙记 transcript URL points to a non-public IP: {host}")
 
 
-def _submit_poll(url: str, num_speakers: int) -> list:
-    """Submit a 妙记 job for the given FileURL, poll to completion, return the
-    list of speaker-labeled sentences. Raises LarkError loud on any failure."""
-    req_id = str(uuid.uuid4())
+def _required_provider_id(name: str, value: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise LarkError(f"{name} must be a non-empty string")
+    return value.strip()
+
+
+def _response_object(response, operation: str) -> Mapping:
+    try:
+        payload = response.json()
+    except (TypeError, ValueError) as e:
+        raise LarkError(
+            f"妙记 {operation} returned non-JSON (HTTP {response.status_code})"
+        ) from e
+    if not isinstance(payload, Mapping):
+        raise LarkError(f"妙记 {operation} returned a non-object JSON response")
+    return payload
+
+
+def submit_lark_job(url: str, num_speakers: int, request_id: str) -> str:
+    """Submit one 妙记 job using a caller-owned durable request ID.
+
+    A durable caller must persist ``request_id`` before calling this function. A
+    timeout or connection failure is ambiguous because the server may already
+    have accepted the request; the dedicated exception forbids an automatic
+    retry with a newly generated ID.
+    """
+    request_id = _required_provider_id("request_id", request_id)
     body = {
         "Input": {"Offline": {"FileURL": url, "FileType": "audio"}},
         "Params": {
@@ -271,27 +321,77 @@ def _submit_poll(url: str, num_speakers: int) -> list:
             "SummarizationParams": {"Types": ["summary"]},
         },
     }
-    rs = requests.post(_SUBMIT, json=body, headers=_headers(req_id), timeout=60)
+    try:
+        rs = requests.post(
+            _SUBMIT,
+            json=body,
+            headers=_headers(request_id),
+            timeout=60,
+        )
+    except requests.RequestException:
+        raise LarkSubmitAmbiguousError(
+            "妙记 submit outcome is ambiguous; reconcile the persisted "
+            "request before retrying"
+        ) from None
+
+    if rs.status_code >= 500:
+        raise LarkSubmitAmbiguousError(
+            "妙记 submit outcome is ambiguous; reconcile the persisted "
+            "request before retrying"
+        )
+
     code = rs.headers.get("X-Api-Status-Code")
     if code != "20000000":
-        raise LarkError(
-            f"妙记 submit failed: code={code} msg={rs.headers.get('X-Api-Message')} body={rs.text[:300]}"
+        if 400 <= rs.status_code < 500 or code:
+            raise LarkSubmitRejectedError(
+                f"妙记 submit rejected: code={code}"
+            )
+        raise LarkSubmitAmbiguousError(
+            "妙记 submit outcome is ambiguous; reconcile the persisted "
+            "request before retrying"
         )
-    task_id = (rs.json().get("Data") or {}).get("TaskID")
-    if not task_id:
-        raise LarkError(f"妙记 submit returned no TaskID: {rs.text[:300]}")
+    try:
+        payload = _response_object(rs, "submit")
+        data = payload.get("Data")
+        if not isinstance(data, Mapping):
+            raise LarkError("妙记 submit returned malformed Data")
+        task_id = data.get("TaskID")
+        if not isinstance(task_id, str) or not task_id.strip():
+            raise LarkError("妙记 submit returned no TaskID")
+    except LarkError:
+        raise LarkSubmitAmbiguousError(
+            "妙记 submit outcome is ambiguous; reconcile the persisted "
+            "request before retrying"
+        ) from None
+    return task_id.strip()
+
+
+def poll_lark_result(request_id: str, task_id: str) -> list:
+    """Resume a persisted 妙记 task and return speaker-labeled sentences."""
+    request_id = _required_provider_id("request_id", request_id)
+    task_id = _required_provider_id("task_id", task_id)
 
     deadline = time.time() + _POLL_TIMEOUT
     while True:
         if time.time() > deadline:
-            raise LarkError(f"妙记 poll timed out after {_POLL_TIMEOUT}s (TaskID={task_id})")
-        rq = requests.post(_QUERY, json={"TaskID": task_id}, headers=_headers(req_id), timeout=60)
-        if rq.status_code != 200:
-            raise LarkError(f"妙记 query HTTP {rq.status_code}: {rq.text[:300]}")
+            raise LarkError(
+                f"妙记 poll timed out after {_POLL_TIMEOUT}s (TaskID={task_id})"
+            )
         try:
-            data = rq.json().get("Data") or {}
-        except ValueError as e:
-            raise LarkError(f"妙记 query returned non-JSON (HTTP {rq.status_code}): {rq.text[:300]}") from e
+            rq = requests.post(
+                _QUERY,
+                json={"TaskID": task_id},
+                headers=_headers(request_id),
+                timeout=60,
+            )
+        except requests.RequestException:
+            raise LarkError("妙记 query request failed") from None
+        if rq.status_code != 200:
+            raise LarkError(f"妙记 query HTTP {rq.status_code}")
+        payload = _response_object(rq, "query")
+        data = payload.get("Data")
+        if not isinstance(data, Mapping):
+            raise LarkError("妙记 query returned malformed Data")
         status = data.get("Status")
         if status == "success":
             break
@@ -302,20 +402,50 @@ def _submit_poll(url: str, num_speakers: int) -> list:
             f"妙记 query failed: status={status} err={data.get('ErrCode')} {data.get('ErrMessage')}"
         )
 
-    transcript_url = (data.get("Result") or {}).get("AudioTranscriptionFile")
-    if not transcript_url:
-        raise LarkError(f"妙记 success but no AudioTranscriptionFile (TaskID={task_id})")
+    result = data.get("Result")
+    if not isinstance(result, Mapping):
+        raise LarkError(f"妙记 success but malformed Result (TaskID={task_id})")
+    transcript_url = result.get("AudioTranscriptionFile")
+    if not isinstance(transcript_url, str) or not transcript_url:
+        raise LarkError(
+            f"妙记 success but no AudioTranscriptionFile (TaskID={task_id})"
+        )
     _guard_fetch_url(transcript_url)  # SSRF guard: URL came from the API response
-    tr = requests.get(transcript_url, timeout=120)
+    try:
+        tr = requests.get(transcript_url, timeout=120)
+    except requests.RequestException:
+        raise LarkError("妙记 transcript download request failed") from None
     if tr.status_code != 200:
-        raise LarkError(f"妙记 transcript download failed: HTTP {tr.status_code} {tr.text[:200]}")
+        raise LarkError(f"妙记 transcript download failed: HTTP {tr.status_code}")
     try:
         sentences = tr.json()
     except ValueError as e:
-        raise LarkError(f"妙记 transcript was not valid JSON: {e}; body={tr.text[:300]}") from e
+        raise LarkError(f"妙记 transcript was not valid JSON: {e}") from e
     if not isinstance(sentences, list):
         raise LarkError(f"妙记 transcript was not a sentence list (TaskID={task_id})")
+    if any(not isinstance(sentence, Mapping) for sentence in sentences):
+        raise LarkError(
+            f"妙记 transcript contained a malformed sentence (TaskID={task_id})"
+        )
     return sentences
+
+
+def _submit_poll(
+    url: str,
+    num_speakers: int,
+    *,
+    task_checkpoint: Callable[[str, str], None] | None = None,
+) -> list:
+    """Compatibility path that submits, checkpoints, then polls one job.
+
+    Durable callers should invoke :func:`submit_lark_job` and
+    :func:`poll_lark_result` separately with their persisted identifiers.
+    """
+    request_id = str(uuid.uuid4())
+    task_id = submit_lark_job(url, num_speakers, request_id)
+    if task_checkpoint is not None:
+        task_checkpoint(request_id, task_id)
+    return poll_lark_result(request_id, task_id)
 
 
 def _format(sentences: list, timeline=None) -> str:
@@ -334,12 +464,9 @@ def _format(sentences: list, timeline=None) -> str:
         start_ms = restore_timestamp_ms(
             s.get("start_time"), timeline, prefer_later=True
         )
-        end_ms = restore_timestamp_ms(
-            s.get("end_time"), timeline, prefer_later=False
-        )
+        end_ms = restore_timestamp_ms(s.get("end_time"), timeline, prefer_later=False)
         lines.append(
-            f"[{_fmt_hms(start_ms)} - {_fmt_hms(end_ms)}] "
-            f"SPEAKER_{spk}: {content}"
+            f"[{_fmt_hms(start_ms)} - {_fmt_hms(end_ms)}] SPEAKER_{spk}: {content}"
         )
     return "\n".join(lines)
 
@@ -364,7 +491,10 @@ def lark_transcribe(
         print(f"  [妙记] transcribing (speakers={spk_desc})...", flush=True)
         t0 = time.time()
         sentences = _submit_poll(url, num_speakers)
-        print(f"  [妙记] done in {time.time()-t0:.0f}s ({len(sentences)} sentences)", flush=True)
+        print(
+            f"  [妙记] done in {time.time() - t0:.0f}s ({len(sentences)} sentences)",
+            flush=True,
+        )
         return _format(sentences, timeline)
     finally:
         # Always runs — even if _tos_client() raised (client stays None).
@@ -375,6 +505,7 @@ def lark_transcribe(
 
 if __name__ == "__main__":
     import argparse
+
     ap = argparse.ArgumentParser(description="妙记 (Lark Minutes) transcription")
     ap.add_argument("audio")
     ap.add_argument("--speakers", type=int, default=0, help="0 = auto-detect")

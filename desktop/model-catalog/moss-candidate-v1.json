@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "pack_id": "moss-candidate-v1",
+  "display_name": "MOSS Transcribe Diarize Q8_0 (Candidate)",
+  "runtime_id": "transcribe-cpp-0.2.3-moss-metal",
+  "runtime_license": "MIT",
+  "runtime_attribution": "handy-computer/transcribe.cpp v0.2.3; separate one-shot worker binary, not model bytes",
+  "model_id": "moss-transcribe-diarize-0.9b-q8_0",
+  "model_revision": "6fdfa33aed776bbb0ac11a1a9835634fe6d75dd7",
+  "minimum_macos_major": 14,
+  "minimum_memory_bytes": 34359738368,
+  "memory_requirement_scope": "full-local-pipeline",
+  "sources": [
+    {
+      "id": "moss-gguf",
+      "base_url": "https://huggingface.co/handy-computer/moss-transcribe-diarize-gguf/resolve/6fdfa33aed776bbb0ac11a1a9835634fe6d75dd7",
+      "license": "Apache-2.0",
+      "attribution": "OpenMOSS MOSS-Transcribe-Diarize; GGUF Q8_0 conversion by handy-computer"
+    }
+  ],
+  "files": [
+    {
+      "source_id": "moss-gguf",
+      "source_path": "MOSS-Transcribe-Diarize-Q8_0.gguf",
+      "install_path": "models/moss/moss-transcribe-diarize-0.9b-q8_0/model.gguf",
+      "sha256": "64ec654dc6ffcfdfe180422dffce1d33422b0c30959b7edfd131bad77ee35039",
+      "size_bytes": 986899616
+    }
+  ]
+}

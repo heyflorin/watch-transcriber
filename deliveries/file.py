@@ -25,5 +25,5 @@ def deliver(note: dict) -> bool:
                 old.unlink()
 
     path.write_text(note["markdown"], encoding="utf-8")
-    print(f"[delivery:file] saved to {path}")
+    print("[delivery:file] recording note saved")
     return True

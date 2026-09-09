@@ -3,12 +3,12 @@
 
 No real personal data — every name, topic, and utterance is invented.
 """
+import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
-
-DEMO = Path(sys.argv[1]).resolve()
 
 
 def note_md(title_line, iso, orig, summary_en, summary_zh, kp_en, kp_zh, actions, transcript):
@@ -188,24 +188,35 @@ RECS = [
     },
 ]
 
+RECORDING_IDS = [
+    "018f92d8-6ad4-7dc1-8e28-8b020d2942cb",
+    "028f92d8-6ad4-7dc1-8e28-8b020d2942cb",
+    "038f92d8-6ad4-7dc1-8e28-8b020d2942cb",
+]
+
 
 def main():
-    DEMO.mkdir(parents=True, exist_ok=True)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("directory", type=Path, help="destination for the fabricated archive")
+    parser.add_argument("--render", action="store_true", help="render the current viewer only into this fabricated archive")
+    args = parser.parse_args()
+    demo = args.directory.resolve()
+    demo.mkdir(parents=True, exist_ok=True)
     manifest = {}
-    for r in RECS:
-        day = DEMO / r["date"]
+    for r, recording_id in zip(RECS, RECORDING_IDS, strict=True):
+        day = demo / r["date"]
         day.mkdir(exist_ok=True)
         note_rel = f"{r['date']}/{r['stem']}.md"
         audio_rel = f"{r['date']}/{r['stem']}.m4a"
         iso = f"{r['date']}T{r['hhmmss'][:2]}:{r['hhmmss'][2:4]}:{r['hhmmss'][4:]}"
-        (DEMO / note_rel).write_text(
+        (demo / note_rel).write_text(
             note_md(r["title"], iso, r["original"], r["summary_en"], r["summary_zh"],
                     r["kp_en"], r["kp_zh"], r["actions"], r["transcript"]),
             encoding="utf-8",
         )
         subprocess.run(
             ["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i",
-             "anullsrc=r=44100:cl=mono", "-t", "2", "-c:a", "aac", str(DEMO / audio_rel)],
+             "anullsrc=r=44100:cl=mono", "-t", "2", "-c:a", "aac", str(demo / audio_rel)],
             check=True,
         )
         entry = {
@@ -214,6 +225,7 @@ def main():
             "category": r["category"],
             "note": note_rel,
             "audio": audio_rel,
+            "recording_id": recording_id,
         }
         if r["speakers"]:
             entry["speakers"] = r["speakers"]
@@ -226,12 +238,23 @@ def main():
             entry["attachments"] = [f"{r['date']}/{r['hhmmss']}-attachments/{name}"]
         manifest[r["key"]] = entry
 
-    (DEMO / "manifest.json").write_text(
+    (demo / "manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
-    (DEMO / "speakers.json").write_text(
+    (demo / "speakers.json").write_text(
         json.dumps({"阿星": "#6cb0f5", "Mia": "#e08fb7", "老周": "#8fbf6a"},
                    ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"demo archive at {DEMO}: {len(manifest)} recordings")
+    print(f"demo archive at {demo}: {len(manifest)} recordings")
+    if args.render:
+        # The legacy viewer uses LOCAL_ARCHIVE_DIR, not the native App's
+        # WATCH_TRANSCRIBER_DATA. Bind it here so UI tests cannot hit ./data.
+        subprocess.run(
+            [sys.executable, "-m", "deliveries.viewer"],
+            cwd=Path(__file__).resolve().parents[2],
+            env={**os.environ, "LOCAL_ARCHIVE_DIR": str(demo)},
+            check=True,
+        )
+        if not (demo / "index.html").is_file():
+            raise RuntimeError("the fabricated archive viewer was not rendered")
 
 
 if __name__ == "__main__":

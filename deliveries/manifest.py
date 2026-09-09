@@ -25,7 +25,7 @@ import json
 import os
 from pathlib import Path
 
-from . import archive_root, parse_note_dt, recording_stem, safe_filename
+from . import archive_key, archive_note_dt, archive_root, recording_stem, safe_filename
 
 # Fixed taxonomy for the summarize stage's category field. Order matters only
 # for prompt display. Keep in sync with nothing — this list IS the source;
@@ -42,6 +42,10 @@ def clean_category(raw) -> str:
 
 def manifest_path() -> Path:
     return archive_root() / "manifest.json"
+
+
+def key_for_note(note: dict) -> str:
+    return archive_key(note)
 
 
 def load() -> dict:
@@ -62,37 +66,111 @@ def save(manifest: dict) -> None:
 
 
 def deliver(note: dict) -> bool:
-    dt = parse_note_dt(note)
-    key = dt.strftime("%Y-%m-%d %H%M%S")
+    dt = archive_note_dt(note)
+    key = key_for_note(note)
     date_dir = archive_root() / dt.strftime("%Y-%m-%d")
     stem = recording_stem(note)
 
     note_file = date_dir / f"{stem}.md"
     audio_file = next(
-        (p for p in sorted(date_dir.glob(f"{stem}.*"))
-         if p.suffix not in (".md", ".tmp")),
+        (
+            p
+            for p in sorted(date_dir.glob(f"{stem}.*"))
+            if p.suffix not in (".md", ".tmp")
+        ),
         None,
     )
 
     manifest = load()
+    prior = manifest.get(key) or {}
+    recording_id = note.get("recording_id")
+    if recording_id is not None:
+        if not isinstance(recording_id, str) or not recording_id.strip():
+            raise ValueError("recording_id must be non-empty text")
+        recording_id = recording_id.strip()
+        if prior.get("recording_id") not in (None, recording_id):
+            raise ValueError("recording_id conflicts with the existing archive entry")
+
+    publish_generation = note.get("publish_generation")
+    if publish_generation is not None:
+        if (
+            isinstance(publish_generation, bool)
+            or not isinstance(publish_generation, int)
+            or publish_generation < 1
+        ):
+            raise ValueError("publish_generation must be a positive integer")
+        prior_generation = prior.get("publish_generation")
+        if isinstance(prior_generation, int) and publish_generation < prior_generation:
+            raise ValueError(
+                "publish_generation is older than the existing archive entry"
+            )
+
     entry = {
         "original": Path(note["audio_path"]).name,
         "title": note["title"],
         "category": clean_category(note.get("category")),
         "note": _rel(note_file) if note_file.exists() else None,
         "audio": _rel(audio_file) if audio_file else None,
+        "captured_at": note.get("timestamp"),
     }
+    stable_recording_id = recording_id or prior.get("recording_id")
+    if stable_recording_id:
+        entry["recording_id"] = stable_recording_id
+    stable_generation = publish_generation or prior.get("publish_generation")
+    if stable_generation:
+        entry["publish_generation"] = stable_generation
+    # App-owned immutable R2 identity stays attached when the legacy watcher
+    # re-renders the same recording. The Python path must never silently turn a
+    # verifiable App object into an unowned legacy object.
+    if stable_recording_id and prior.get("recording_id") == stable_recording_id:
+        for field in (
+            "r2_key",
+            "r2_generation",
+            "audio_sha256",
+            "audio_size_bytes",
+        ):
+            if field in prior:
+                entry[field] = prior[field]
+    for field in ("source", "source_kind"):
+        value = note.get(field) or prior.get(field)
+        if value:
+            entry[field] = value
     # User-authored fields (desktop app writes them) survive a reprocess.
-    prior = manifest.get(key) or {}
     for field in ("speakers", "speakers_applied", "attachments"):
         if prior.get(field):
             entry[field] = prior[field]
     manifest[key] = entry
     save(manifest)
     rebuild_views(manifest)
-    print(f"[delivery:manifest] {key} -> {manifest[key]['category']} "
-          f"(audio: {'yes' if audio_file else 'no'})")
+    print("[delivery:manifest] recording entry updated")
     return True
+
+
+def verify_destination(note: dict) -> dict[str, object]:
+    """Parse the persisted manifest and verify this publication identity."""
+
+    path = manifest_path()
+    try:
+        entry = load()[key_for_note(note)]
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError):
+        raise OSError("archive manifest could not be verified") from None
+    expected = {
+        "title": note["title"],
+        "category": clean_category(note.get("category")),
+        "recording_id": note.get("recording_id"),
+        "publish_generation": note.get("publish_generation"),
+        "source": note.get("source"),
+        "source_kind": note.get("source_kind"),
+    }
+    if any(value is not None and entry.get(field) != value for field, value in expected.items()):
+        raise OSError("archive manifest failed identity verification")
+    if not entry.get("note") or not entry.get("audio"):
+        raise OSError("archive manifest is missing canonical artifacts")
+    return {
+        "backend": "local_archive",
+        "locator": path.resolve().relative_to(archive_root()).as_posix(),
+        "recording_key": key_for_note(note),
+    }
 
 
 def _rel(p: Path) -> str:
@@ -128,8 +206,11 @@ def rebuild_views(manifest: dict) -> None:
             if link.exists():
                 # Same category + same displayed minute + same AI title:
                 # disambiguate with the seconds-precision key.
-                link = cat_dir / f"{safe_filename(entry['title'])}-{key.split()[1]}{target.suffix}"
+                link = (
+                    cat_dir
+                    / f"{safe_filename(entry['title'])}-{key.split()[1]}{target.suffix}"
+                )
             if link.exists():
-                print(f"[manifest] WARN duplicate view name, skipped: {link.name}")
+                print("[manifest] duplicate generated view name skipped")
                 continue
             link.symlink_to(os.path.relpath(target, cat_dir))

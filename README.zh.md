@@ -2,14 +2,46 @@
 
 [English](README.md)
 
-Apple Watch 语音转文字流水线（妙记转写约 2 元/小时）。手腕上录音，自动生成结构化笔记——再用自带的桌面 App **回音壁**(EchoWall)浏览、播放、管理整个档案。
+跨平台录音/导入 + Apple Watch 语音转文字流水线（妙记转写约 2 元/小时），
+最终都进入 **回音壁**（EchoWall）管理。
+
+> **当前状态：** 已验证的默认入口仍是 Mac 上的 Voice Memos watcher。
+> 当前 release 目标是 macOS、iOS、Android 的 App 内录音/导入；在
+> [`docs/capture/PLAN.md`](docs/capture/PLAN.md) 的真机矩阵通过前，不会写成已经发布。
+> Windows 11 完整能力排在下一个 release；当前 Windows 代码和 CI 产物只是未支持的
+> 技术预览，不代表已经发布。
 
 ```
 Apple Watch (语音备忘录) → iCloud 同步 → Mac 检测新 .m4a
-  → 妙记（火山 Lark Minutes）语音识别 — 服务端说话人分离（Gemini/OpenAI 兜底）
-    → 可插拔投递层 (Apple Notes、飞书、Obsidian、自定义)
+  → 上传火山 TOS → 妙记 API 服务端转写 + 说话人分离
+    → Gemini 生成标题/摘要 → 可插拔投递层 (Apple Notes、飞书、Obsidian、自定义)
       → 回音壁 EchoWall 桌面 App（浏览 · 播放 · 说话人标注 · 管理）
+
+EchoWall 录音 / 导入 → App 内 Rust 持久队列 → 直接上传火山 TOS
+  → 妙记 API → Gemini 标题/摘要 → App 内档案发布器
+
+Apple Silicon macOS（用户明确安装）→ 本地 MOSS/Metal 或 Whisper/Metal
+  → 本地匿名说话人 → 本地 Qwen3.8-27B 摘要
+    → 已验证的本机档案；云备份可稍后同步
 ```
+
+新的 App 路径不需要 EchoWall 自建处理服务。用户在明确的设置流程里提供自己的
+provider/档案凭据，凭据只进入系统安全存储，不随 release 打包。Python watcher 在
+迁移期仅作为已经验证的 Voice Memos 兼容入口保留。
+
+MOSS 本地处理支持运行 macOS 14 及以上、至少 32 GiB 统一内存的 Apple Silicon Mac。
+打开 **MOSS 本地**，明确点击安装转写、说话人和摘要模型。导入录音后，可分别选择
+**MOSS 本地处理**、**Whisper 离线处理**或**云端处理**。
+新录音的默认方式可单独保存，App 重启后仍有效，已有任务保持原选择。
+尚未选择默认方式时，录音留在本机等待操作；本地模型不可用或偏好读取失败时，
+不会自动下载或转为云端处理。旧 Whisper 偏好不会改成 MOSS，页面会提供明确的保存入口。
+
+当前实用质量标准是英文、中文和中英混合会议笔记达到与飞书/妙记相近的可用程度。
+已有语料与完全本地的源码引擎验证支持这一目标；少数困难尾段仍可能明确失败，
+原录音会保留，可重试或导出。这些验证不代表所有历史样本或最终安装发行版均已通过。
+详见[当前就绪状态与限制](docs/capture/PLAN.md)。
+当前 macOS、Android 与 iOS 本地构建的路径、哈希和安装限制见
+[9 月 6 日交付说明](docs/capture/evidence/practical-closeout-2026-09-06.md)。
 
 ## 回音壁 EchoWall —— 桌面客户端
 
@@ -26,24 +58,32 @@ Apple Watch (语音备忘录) → iCloud 同步 → Mac 检测新 .m4a
 - **暗色档案 UI** —— AI 标题、双语摘要、要点、完整分说话人转写；搜索、话题 + 说话人筛选、按天汇总；详情页分 摘要/附注/转写 三个 tab（快捷键 1/2/3）；点转写里任意时间戳，音频直接跳到那一刻。pipeline 投递新录音后页面自动同步。
 - **说话人标注** —— 点芯片给 `SPEAKER_N` 命名，可批量应用到当前筛选，支持自选人物颜色；每行显示层叠的头像堆。标注存进 `manifest.json` 的 `speakers` 字段，reprocess 不丢，自动 commit+push 到私有笔记仓库，并回写进笔记文件的转写标签（`scripts/ops/apply_speakers.py`，借 `speakers_applied` 可逆）。
 - **Markdown 附注** —— 每条录音可粘贴或选择 `.md`/`.txt`（对话的 AI 分析、会议背景，随便什么）；存在 `data/<日期>/<HHMMSS>-attachments/`，记入 manifest，app 内渲染。`scripts/ops/import_gpt_thread.py <export.json>` 批量导入 ChatGPT 导出（含全部分支，兼容三代历史上传文件名）：给每条录音挂上对应分析，并自动提取「SPEAKER_N 是谁」打标（绝不覆盖手工标注）。幂等可重跑。
-- **安全删除** —— 两步确认的「删除」按钮（或 `scripts/ops/delete_recording.py`）移除笔记、音频拷贝、附注、manifest 条目、by-topic 链接和 R2 备份对象，刷新当日汇总，然后自动 commit+push。Voice Memos 原件和 Apple Notes/飞书分身有意不动；git 历史里随时可恢复。
-- **本地优先，数据归你** —— 薄 Rust 壳：环回 axum 服务器伺服 `data/`（HTTP Range → 音频可拖进度），webview 加载 pipeline 生成的同一个 `index.html` —— 不存在第二份 viewer 实现，无云端、无账号。数据只去你自己配置的私有备份。`WATCH_TRANSCRIBER_DATA` 可覆盖档案位置。
-- **新机器几分钟就位** —— clone 本仓库直接开 app：档案缺失时显示引导页，跑一次 `python3 scripts/ops/restore_archive.py`（克隆私有笔记仓库、从 R2 拉回全部音频、seed 上传账本、重建 viewer）后自动进入。
+- **安全删除** —— 两步确认的「删除」按钮通过 Rust 原生 archive CAS 删除笔记、App 所有的音频、附注和 manifest 条目，并发布 recording tombstone，避免旧任务复活录音。没有 App 所有权元数据的历史 R2 对象会要求第二次明确确认，只做 partial delete，并清楚显示远端旧音频仍保留。Voice Memos 原件和 Apple Notes/飞书分身有意不动；`scripts/ops/delete_recording.py` 仅保留为显式维护 CLI。
+- **可恢复的录音控制** —— 处理队列重启后自动恢复，提供重试、取消、导出原录音、复用 transcript 的重新处理，以及二次确认后的本机副本丢弃。桌面窗口关闭不会停止录音；菜单栏显示来源与计时，可暂停/继续/停止，退出前会先确认并安全关闭当前分段。
+- **Apple Silicon 可选端到端完全离线处理** —— 明确安装 MOSS 本地模型包，也可继续使用独立的 Whisper 备选路线。两者均提供匿名说话人、Qwen3.8-27B `UD-Q4_K_XL` 双语摘要和已验证的本机档案；安装前会显示下载量和硬件要求。Rust 管理持久任务与恢复，受限的一次性 worker 负责模型处理。本地完成不会请求 TOS、妙记、Gemini、GitHub 或 R2；云备份需另行明确选择。
+- **本地优先，数据归你** —— 一个 Rust + Tauri App 负责录音、导入、持久处理、档案发布和带 capability path 的 HTTP Range 传输。webview 只渲染 App 内编译的可信 viewer。没有回音壁自建云端、账号或 processing server；数据只去你自己配置的 TOS、妙记、Gemini、GitHub 和 R2。源码开发时用 `WATCH_TRANSCRIBER_DATA` 覆盖 Rust App 档案位置；旧 Python watcher 使用 `LOCAL_ARCHIVE_DIR`。
+- **新机器几分钟就位** —— 独立安装版把档案放进系统 app-data。首次启动既可不配置任何凭据、直接创建完全本机档案，也可通过 write-only 原生命令配置 GitHub/R2 私有仓库/bucket 并同步；空档案也能正常进入 App，不会卡在 setup。App 不要求 clone 仓库或运行 Python restore。
 
 ```bash
 cd desktop
 npm install
-npm run tauri dev      # 对 ../data 运行
-npm run tauri build    # 打包独立的 EchoWall.app / .dmg
+npm run tauri:dev:macos    # 对 ../data 运行，并构建本地模型 sidecar
+npm run tauri:build:macos  # 本地打包；发行签名由 CI 凭据完成
 ```
 
 不想自己构建：直接从 [**GitHub Releases**](https://github.com/xingfanxia/watch-transcriber/releases) 下载最新的 `EchoWall_*_universal.dmg`（Apple Silicon + Intel 通用）。每次打 `v*` tag，CI 自动构建发版（`.github/workflows/release.yml`）。
 
-> Release 构建带 **Developer ID 签名并通过 Apple 公证** —— 下载即开，无任何 Gatekeeper 阻拦。
+> Release 构建带 **Developer ID 签名并通过 Apple 公证**。CI 先验证通用 App，
+> 再单独公证并 staple 最终 DMG，之后才允许上传。
 
 ## 移动端
 
-回音壁同样跑在 **iOS 和 Android** 上(同一个 Tauri 壳、同一份生成页面),定位是**只读伴侣**:直接从你自己的备份拉档案 —— 私有笔记仓库以 GitHub tarball 拉取,音频从你的 R2 bucket 按需流式播放 —— 手机端不需要任何常驻服务器。编辑(说话人、附注、删除)留在桌面端。
+回音壁同样跑在 **iOS 和 Android** 上，仍复用同一个 Tauri 壳和同一份生成页面。
+已经验证的是档案浏览/同步。新增路径是用户主动开启的 App 内麦克风录音和原生文件/分享导入：
+Android 已有 foreground service 录音与 SAF/分享入口，iOS 已有后台 AVFAudio 录音和
+Voice Memos/Files Share Extension；两边都要通过真机生命周期与签名发布矩阵后，才会写成已上线。
+说话人、附注、删除等档案编辑仍留在桌面端。
+应用内的 loopback 只是带一次性 capability path 和同源写校验的媒体传输层，不承担 processing。viewer 模板和 markdown 运行时编译进 App，不会执行从档案仓库同步下来的 HTML/JavaScript。
 
 | 时间流列表 + 同步状态 | 详情:tab、播放器、离线 pin | 首次运行 token 配置 | 手动深浅色切换 |
 |---|---|---|---|
@@ -51,14 +91,17 @@ npm run tauri build    # 打包独立的 EchoWall.app / .dmg
 
 *截图均为虚构演示数据。*
 
-- **直拉同步** —— 启动时(以及点同步胶囊时)下载笔记仓库 tarball 覆盖进 app 沙盒;构建好的档案页面就在仓库里,移动端渲染的永远是桌面端构建的那一份。同步状态:同步中 / ✓ 已同步 / 同步失败 / 离线 / token 已过期。
+- **直拉同步** —— 启动时(以及点同步胶囊时)下载笔记仓库 tarball 覆盖进 app 沙盒，再由 App 内置的可信 viewer 模板从经验证的 manifest/笔记生成界面。同步状态:同步中 / ✓ 已同步 / 同步失败 / 离线 / token 已过期。
 - **音频:流式 + 缓存 + pin** —— 播放走 R2 的 HTTP Range(可拖进度),500MB LRU 磁盘缓存让重播走本地,播放器上的 ↓ 把单条录音固定到离线。离线时:笔记永远可看,已 pin 的音频照常播,未缓存的显示 离线未缓存。
 - **token 存平台安全存储** —— iOS Keychain / Android Keystore,不落明文文件,更不进这个仓库。
+- **恢复导出走原生通道** —— iOS 导出已校验的非空文档，Android 写入用户选择的 SAF `content://` 目标；两端都会重新打开结果核对大小/hash，取消或失败不会删除 App 内副本。
 
-**token 配置**(首次运行需要两份只读凭据):
+**token 配置**(首次运行需要两份仅限你自己档案的凭据，并明确填写对应的私有仓库和 bucket):
 
-1. **GitHub fine-grained PAT** —— github.com → Settings → Developer settings → Fine-grained tokens:仓库范围只选私有笔记仓库,权限只给 Contents: Read-only。最长有效期 1 年,记得设个轮换提醒。
-2. **R2 API token** —— Cloudflare 控制台 → R2 → Manage API Tokens → Create:权限选 Object Read only,范围限定音频 bucket。创建后页面直接给出 **Access Key ID** 和 **Secret Access Key**;**Account ID** 在 R2 概览页。
+1. **GitHub fine-grained PAT** —— 仓库范围只选私有笔记仓库。仅浏览使用 Contents: Read-only；要让 App 内录音/导入发布档案，需要 Contents: Read and write。最长有效期 1 年，记得设轮换提醒。
+2. **R2 API token** —— 范围只限定音频 bucket。仅播放使用 Object Read only；要让 App 发布录音，需要 Object Read & Write。创建后页面会给出 **Access Key ID** 和 **Secret Access Key**，**Account ID** 在 R2 概览页。
+
+公开构建不包含任何共享凭据。只读 token 仍可用于纯浏览；在当前安装没有用户自己的写权限前，回音壁必须把处理能力显示为未配置。
 
 **安装**:iOS 走 TestFlight(app record 建好前为邀请制)· Android 从 [GitHub Releases](https://github.com/xingfanxia/watch-transcriber/releases) 下载签名的 `EchoWall_*_universal.apk` 侧载(与 dmg 同一条 CI 构建签名)。
 
@@ -69,7 +112,7 @@ cd desktop
 npm run tauri ios dev      # iOS 模拟器(先手动 boot)
 npm run tauri android dev  # Android 模拟器
 npm run tauri ios build -- --export-method app-store-connect   # App Store ipa
-npm run tauri android build -- --apk                           # 签名 APK(keystore.properties)
+npm run tauri android build -- --target aarch64 x86_64 --apk # 签名 64 位 APK
 ```
 
 ## 为什么选这个方案
@@ -95,22 +138,30 @@ iOS 18+ 的语音备忘录自带转写功能，但是：
 - **没有说话人识别。** 输出就是一整块文本，不分谁说的。
 - **准确率约 80-90%**，而 Gemini 3 Pro 在中英混合基准测试中 MER 仅 7.2%。
 
-### 为什么选语音备忘录 + launchd？
+### 为什么仍保留语音备忘录 + launchd？
 
-- **语音备忘录已经解决了所有难题。** 后台录音、来电恢复、无限时长、iCloud 同步——全靠 Apple 自家系统级权限，第三方 App 拿不到。
+- **它是兼容兜底，不是新的 processing architecture。** 语音备忘录已经处理了后台录音、
+  来电中断、长文件和 iCloud 同步；App 内录音通过同等可靠性验证前，现有 watcher 一直保留。
 - **Action Button 可用。** Ultra 的操作按钮可以直接映射到语音备忘录，一键开录。
 - **录音秒级同步。** 文件几秒内就出现在 Mac 的已知路径上。
-- **launchd `WatchPaths`** 是 macOS 原生文件系统监听，零轮询、零耗电、零依赖。
+- **launchd `WatchPaths`** 只负责这条旧的 Mac 入口。iPhone App 无法扫描 Voice Memos
+  私有容器；手机上要么用「分享 → EchoWall」，要么直接在 EchoWall 内录音。
 
 ### 语音识别：为什么默认选 妙记（火山 Lark Minutes）？
 
 **默认走 妙记（`volc.lark.minutes`，`STT_PROVIDER=lark`）。** 它**一次调用就在服务端做完说话人分离**——不切块、不跨块缝合。在 5 段真实录音上验证（2026-06）：妙记对 4 段两人对话**每段都精准判 2 人**，而切块缝合的 Gemini/OpenAI 以及豆包 auc 模型全都虚高（3–5 人）；3.45 小时的长文件也一次吃下。难的从来不是转写，是「谁在说」——妙记把它当成服务端的一等任务，而不是缝合的事后补救。
 
-妙记需要一个公网可下载的 FileURL，所以流水线会先把音频转成 16kHz 单声道小 mp3，上传到火山 TOS，给妙记一个预签名链接，转完再删掉。**TOS 建议用香港区域**——从中国大陆以外上传快得多（单线程 ~700KB/s vs 上海 ~10–30KB/s），妙记照样能取。需要 `VOLC_API_KEY` + `VOLC_TOS_*`（见 `.env.example`）。
+当前已经验证的旧 watcher 主链路很简单：
 
-为减少妙记按音频时长消耗的额度，安装 Senko 后，默认会在本地识别持续超过 10 秒的无人声间隙，并且只压缩发送给妙记的临时 mp3。安全约束是：每个间隙两端至少保留 3 秒；原始 m4a 永远不修改；妙记返回的时间戳会映射回原录音时间；Senko、ffmpeg 或时长校验任一步失败，都会自动回退到完整录音。设置 `LARK_TRIM_LONG_SILENCE=0` 可关闭，阈值见 `.env.example`。
+```text
+检测到新 .m4a → 上传压缩副本到火山 TOS → 调用妙记 API
+```
 
-**Gemini 3.5 Flash** 和 **OpenAI gpt-4o-transcribe-diarize** 作为兜底（`STT_PROVIDER=gemini|openai`），它们会自动切块长音频并跨块缝合说话人标签（详见下文）。我们最初对比中英混合音频的方案：
+妙记需要一个公网可下载的 FileURL。旧 Python watcher 会把完整录音转换成 16kHz 单声道小 MP3，放进 TOS，再把预签名链接交给妙记，任务结束后删除临时对象。新的 App 路径不调用 Python 或 ffmpeg，由 Rust/Symphonia 完整解码校验 `.m4a`、`.mp3`、`.wav`，再用匹配的后缀和 MIME 上传，之后走同一条妙记 → Gemini 文本摘要链。两条默认路径都不运行 Senko、pyannote、本地说话人分离或音频切块（watcher 当前为 `LARK_TRIM_LONG_SILENCE=0`）。
+
+**TOS 建议用香港区域**——从中国大陆以外上传快得多（单线程 ~700KB/s vs 上海 ~10–30KB/s），妙记照样能取。需要 `VOLC_API_KEY` + `VOLC_TOS_*`（见 `.env.example`）。
+
+仓库仍保留早期的 **Gemini 3.5 Flash** 和 **OpenAI gpt-4o-transcribe-diarize** 备用 provider（`STT_PROVIDER=gemini|openai`）。相关的切块和本地说话人分离代码不属于默认妙记链路。我们最初对比中英混合音频的方案：
 
 | 服务商 | 中英混合 MER | 每小时成本 | 说话人识别 |
 |--------|-------------|-----------|-----------|
@@ -124,7 +175,7 @@ iOS 18+ 的语音备忘录自带转写功能，但是：
 
 两个兜底之间：一段 2 小时中英混合录音上和 `gpt-4o-transcribe-diarize` 完整对比，Gemini 在标点、code-switching（`ROI` 保留为 `ROI`，OpenAI 转成了 `RY`）、不会从中文语气词幻觉出英文片段这几方面都胜出——所以 Gemini 是首选兜底；OpenAI（`STT_PROVIDER=openai`）能捕捉更细颗粒度的语气词。
 
-### 长音频处理（静音切分 + 并行）
+### 长音频处理（仅 Gemini/OpenAI 备用链路）
 
 Gemini 3 Flash 单次调用处理 >15 分钟音频时会**静默 summarize / 丢内容** — 在 2 小时文件上实测，单次调用的输出只到 01:22:00 就停了，并且把 71 分钟的对话塞进了一行 "turn"。本流水线会自动把长音频按静音边界切分（`ffmpeg silencedetect`），**并行**转写各 chunk（默认 8 并发）。
 
@@ -189,7 +240,7 @@ lark-cli auth status                               # → 应该看到 tokenStatu
 - 默认 **妙记** provider：火山引擎 `VOLC_API_KEY` + TOS 桶凭据（`VOLC_TOS_*`，建议香港区域）——见 `.env.example`。`pip install tos`。
 - [Gemini API Key](https://aistudio.google.com/apikey)——始终需要（摘要阶段走 Gemini；也是 `gemini` 兜底 provider）。
 - Python **3.12+**（系统自带的 `python3` 是 3.9，太老；用 `brew install python@3.12` 或 asdf 装）
-- `ffmpeg` — 音频转换 + 长音频静音切分必需。`brew install ffmpeg`
+- `ffmpeg` — 仅旧 Python watcher 和备用 provider 需要；独立 App 路径不会调用。`brew install ffmpeg`
 
 ### 安装步骤
 

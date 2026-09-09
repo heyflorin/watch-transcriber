@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-drain-shared-imports"
+description = "Enables the drain_shared_imports command without any pre-configured scope."
+commands.allow = ["drain_shared_imports"]
+
+[[permission]]
+identifier = "deny-drain-shared-imports"
+description = "Denies the drain_shared_imports command without any pre-configured scope."
+commands.deny = ["drain_shared_imports"]

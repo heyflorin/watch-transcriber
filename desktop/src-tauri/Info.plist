@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>EchoWall records the microphone only after you explicitly start a voice memo or meeting capture.</string>
+  <key>NSScreenCaptureUsageDescription</key>
+  <string>EchoWall captures audio from the meeting app or whole browser you select, or all system audio only when you explicitly choose System Capture.</string>
+  <key>NSAudioCaptureUsageDescription</key>
+  <string>EchoWall captures system audio only after you explicitly select a meeting source or choose System Capture.</string>
+</dict>
+</plist>

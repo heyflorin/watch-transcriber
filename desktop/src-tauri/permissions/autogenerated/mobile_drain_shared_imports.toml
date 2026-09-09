@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-mobile-drain-shared-imports"
+description = "Enables the mobile_drain_shared_imports command without any pre-configured scope."
+commands.allow = ["mobile_drain_shared_imports"]
+
+[[permission]]
+identifier = "deny-mobile-drain-shared-imports"
+description = "Denies the mobile_drain_shared_imports command without any pre-configured scope."
+commands.deny = ["mobile_drain_shared_imports"]

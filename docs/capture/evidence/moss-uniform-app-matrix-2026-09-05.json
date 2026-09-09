@@ -1,0 +1,407 @@
+{
+  "schema_version": 1,
+  "scope": "source-engine-original-AAC-transcript-matrix-not-summary-UI-or-release-acceptance",
+  "observed_at_utc": "2026-09-06T06:46:16.321927+00:00",
+  "status": "completed_with_failures",
+  "planned_cases": 44,
+  "completed_cases_at_checkpoint": 20,
+  "failed_cases_at_checkpoint": 0,
+  "runner_pid_observed_live": 37712,
+  "tool_session_id": 87891,
+  "runner": "local-eval/matrix/runners/moss-matrix-20260905-a",
+  "runner_sha256": "665124180ada5a37196c6cd7fd13d778946dee168ba9fee4d96335b3e3cd8c42",
+  "root": "local-eval/matrix/outputs/moss-uniform-app-v1/run-7RKXpm",
+  "policy": "original-aac-app-quiet12-coalesced2-graph3-v1",
+  "source_manifest_sha256": "c6615a07f8e80fbe75d3da65b75898423a716749750a1033bca0db70b4506280",
+  "source_duration_audit_sha256": "4cbf15eab57e221049c8d5dd777dcbea5eb7c461b327484c2ea5c4977266ae0a",
+  "worker_sha256": {
+    "moss": "4b4ef451aad0d14448ec1034f343667c50ce0c281f8ebc888ff982cdbed9957f",
+    "speakerkit": "def6a26e2c819ff7898db39b7e3fe67385ca6615f0cfab86701454ef42751774",
+    "summary_not_invoked": "0d2161ece5ad301c537ac5973ff80e7e760db318f078d364234fcaf4c32a6bb2"
+  },
+  "network_policy": "outer-test-and-workers-deny-network",
+  "credentials": "ephemeral-empty",
+  "language": "auto",
+  "speaker_count_hint": null,
+  "reference_or_stratum_used_to_choose_inference_policy": false,
+  "stop_state_per_case": "summarizing",
+  "summary_or_archive_executed": false,
+  "playback_or_personal_audio": false,
+  "completed_strata": {
+    "english": {
+      "cases": 10,
+      "comparison_passed": true,
+      "failure_codes": [],
+      "local_wer": 0.16706535668517727,
+      "miaoji_wer": 0.2527979495941905,
+      "local_cer": 0.11935165321619505,
+      "miaoji_cer": 0.18302856948275276,
+      "local_der": 0.21758861365093113,
+      "miaoji_der": 0.3726031111350944,
+      "local_jer": 0.2597530503909938,
+      "miaoji_jer": 0.5221999824947695,
+      "local_exact_count": 9,
+      "miaoji_exact_count": 3,
+      "local_named_term_recall": 0.9,
+      "miaoji_named_term_recall": 0.5,
+      "minimum_case_lexical_assignment": 1,
+      "snapshot": "scores/d1cfd89b6a51b80de81582fb-english.json"
+    },
+    "mixed": {
+      "cases": 10,
+      "comparison_passed": false,
+      "failure_codes": [
+        "speaker_count_noninferiority",
+        "named_term_recall"
+      ],
+      "local_wer": 0.10257402748209793,
+      "miaoji_wer": 0.11623766208631701,
+      "local_cer": 0.08023675719566657,
+      "miaoji_cer": 0.09301480800871814,
+      "local_der": 0.16058914551648315,
+      "miaoji_der": 0.20263478804434548,
+      "local_jer": 0.17130251838100433,
+      "miaoji_jer": 0.24337062101083626,
+      "local_exact_count": 7,
+      "miaoji_exact_count": 8,
+      "local_named_term_recall": 0.9,
+      "miaoji_named_term_recall": 1,
+      "minimum_case_lexical_assignment": 1,
+      "all_cases_have_two_windows": true,
+      "remaining_count_errors": "three recordings each overcount by one",
+      "snapshot": "scores/8ddf3bb4ae23bb70c4a846f0-mixed.json"
+    }
+  },
+  "normal_app_tests": {
+    "passed": 318,
+    "explicitly_ignored": 30
+  },
+  "grader_tests": {
+    "library_passed": 15,
+    "cli_passed": 1
+  },
+  "whole_matrix_or_human_quality_passed": false,
+  "resumption": "The first attempt is terminal (42/44). Preserve all failed attempts and completed-window receipts. Diagnose the exact failed requests before a separately identified repair/replay; never replace missing cases with historical outputs. Per-case lexical assignment also fails for two Mandarin and three overlap cases.",
+  "checkpoint_observed_at_utc": "2026-09-06T05:28:58Z",
+  "terminal_result": {
+    "attempted_cases": 44,
+    "successful_cases": 42,
+    "failed_cases": 2,
+    "runner_pid_present_on_resume": false,
+    "all_sources_unchanged": true,
+    "outcome": "outcome-398747e3-31cc-4984-bf83-5b705e9a4f36.json",
+    "outcome_sha256": "6c03330c8489820680aff7b7e1c70ee85d88db21a5e4a9663a16d7397fcb85ab",
+    "score_snapshot": "scores/107030a3cf1ee4f889d4ac82-all.json",
+    "score_snapshot_sha256": "0359c42ec190a821732e34f7a0daab314e0ffc218f480bd4987ccb93e9806c49",
+    "score_reverified_on_resume": true,
+    "failures": [
+      {
+        "case_id": "long_form_04",
+        "recording_id": "f46464dc-48ac-4931-b5df-1b75c5c9c7cf",
+        "generation": "f26718c5-ec82-4376-915a-2e9fdc5421cd",
+        "completed_windows": 5,
+        "error_code": "effect_Temporary"
+      },
+      {
+        "case_id": "overlap_02",
+        "recording_id": "4dbe04db-250f-4709-88d5-c024e454bece",
+        "generation": "20050170-3776-4b60-bc75-a329549c3f6b",
+        "completed_windows": 0,
+        "error_code": "effect_Temporary"
+      }
+    ],
+    "comparison": {
+      "schema_version": 2,
+      "acceptance_policy": "miaoji-relative-v2",
+      "scope": "transcript_metrics_only",
+      "status": "insufficient_corpus",
+      "strata": {
+        "english": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7200640,
+          "miaoji": {
+            "wer": 0.2527979495941905,
+            "cer": 0.18302856948275276,
+            "der": 0.3726031111350944,
+            "jer": 0.5221999824947695,
+            "exact_speaker_count": 0.3,
+            "named_term_recall": 0.5,
+            "timestamp_coverage": 0.8341632850521702,
+            "adjacent_duplicate_rate": 0
+          },
+          "local": {
+            "wer": 0.16706535668517727,
+            "cer": 0.11935165321619505,
+            "der": 0.21758861365093113,
+            "jer": 0.2597530503909938,
+            "exact_speaker_count": 0.9,
+            "named_term_recall": 0.9,
+            "timestamp_coverage": 0.9173197163259108,
+            "adjacent_duplicate_rate": 0.0006105006105006105
+          }
+        },
+        "long_form": {
+          "sufficient": false,
+          "passed": false,
+          "failure_codes": [
+            "insufficient_corpus"
+          ],
+          "cases": 3,
+          "duration_ms": 16200192,
+          "miaoji": {
+            "wer": 0.3220074526864548,
+            "cer": 0.2434891014278201,
+            "der": 0.382968575781811,
+            "jer": 0.48821717390058966,
+            "exact_speaker_count": 0.3333333333333333,
+            "named_term_recall": 1,
+            "timestamp_coverage": 0.7755248309729611,
+            "adjacent_duplicate_rate": 0
+          },
+          "local": {
+            "wer": 0.22269948785726087,
+            "cer": 0.15554570777412002,
+            "der": 0.2257394878021728,
+            "jer": 0.34095294393108105,
+            "exact_speaker_count": 0.3333333333333333,
+            "named_term_recall": 1,
+            "timestamp_coverage": 0.9527947955270363,
+            "adjacent_duplicate_rate": 0
+          }
+        },
+        "mandarin": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7200640,
+          "miaoji": {
+            "wer": 0.16378068687385974,
+            "cer": 0.1641490110734174,
+            "der": 0.20353626107042916,
+            "jer": 0.42522242691331164,
+            "exact_speaker_count": 0.1,
+            "named_term_recall": 1,
+            "timestamp_coverage": 0.9224373630941912,
+            "adjacent_duplicate_rate": 0
+          },
+          "local": {
+            "wer": 0.15613097333802772,
+            "cer": 0.15611598284580427,
+            "der": 0.10355822796727068,
+            "jer": 0.2867065492057428,
+            "exact_speaker_count": 0.3,
+            "named_term_recall": 1,
+            "timestamp_coverage": 0.9682385791302857,
+            "adjacent_duplicate_rate": 0.009811937857726901
+          }
+        },
+        "mixed": {
+          "sufficient": true,
+          "passed": false,
+          "failure_codes": [
+            "speaker_count_noninferiority",
+            "named_term_recall"
+          ],
+          "cases": 10,
+          "duration_ms": 7225408,
+          "miaoji": {
+            "wer": 0.11623766208631701,
+            "cer": 0.09301480800871814,
+            "der": 0.20263478804434548,
+            "jer": 0.24337062101083626,
+            "exact_speaker_count": 0.8,
+            "named_term_recall": 1,
+            "timestamp_coverage": 0.9257975877298925,
+            "adjacent_duplicate_rate": 0
+          },
+          "local": {
+            "wer": 0.10257402748209793,
+            "cer": 0.08023675719566657,
+            "der": 0.16058914551648315,
+            "jer": 0.17130251838100433,
+            "exact_speaker_count": 0.7,
+            "named_term_recall": 0.9,
+            "timestamp_coverage": 0.9803627920730913,
+            "adjacent_duplicate_rate": 0.001081081081081081
+          }
+        },
+        "overlap": {
+          "sufficient": false,
+          "passed": false,
+          "failure_codes": [
+            "insufficient_corpus"
+          ],
+          "cases": 9,
+          "duration_ms": 1620864,
+          "miaoji": {
+            "wer": 0.4667585256631071,
+            "cer": 0.39578488372093024,
+            "der": 0.6971432741070451,
+            "jer": 0.801256017487559,
+            "exact_speaker_count": 0,
+            "named_term_recall": 0.6666666666666666,
+            "timestamp_coverage": 0.7265091586217826,
+            "adjacent_duplicate_rate": 0.007079646017699115
+          },
+          "local": {
+            "wer": 0.3563554943162246,
+            "cer": 0.29704457364341086,
+            "der": 0.4803247919377658,
+            "jer": 0.5378866815864504,
+            "exact_speaker_count": 0.4444444444444444,
+            "named_term_recall": 0.8888888888888888,
+            "timestamp_coverage": 0.8479615958584805,
+            "adjacent_duplicate_rate": 0.01023391812865497
+          }
+        }
+      },
+      "stretch": {
+        "target": "exact_speaker_count_per_stratum",
+        "minimum_accuracy": 0.95,
+        "status": "insufficient_corpus",
+        "strata": {
+          "english": false,
+          "long_form": null,
+          "mandarin": false,
+          "mixed": false,
+          "overlap": null
+        }
+      }
+    },
+    "lexical_assignment": {
+      "schema_version": 1,
+      "scope": "speaker_lexical_assignment_only",
+      "tokenizer": "wer-unicode-alphanumeric-han-v1",
+      "minimum_per_case": 0.99,
+      "status": "insufficient_corpus",
+      "strata": {
+        "english": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7200640,
+          "local": {
+            "lexical_tokens": 21378,
+            "assigned_tokens": 21378,
+            "assigned_fraction": 1,
+            "minimum_case_fraction": 1,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 19573,
+            "assigned_tokens": 19573,
+            "assigned_fraction": 1,
+            "minimum_case_fraction": 1,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        },
+        "long_form": {
+          "sufficient": false,
+          "passed": false,
+          "failure_codes": [
+            "insufficient_corpus"
+          ],
+          "cases": 3,
+          "duration_ms": 16200192,
+          "local": {
+            "lexical_tokens": 47651,
+            "assigned_tokens": 47651,
+            "assigned_fraction": 1,
+            "minimum_case_fraction": 1,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 44452,
+            "assigned_tokens": 44452,
+            "assigned_fraction": 1,
+            "minimum_case_fraction": 1,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        },
+        "mandarin": {
+          "sufficient": true,
+          "passed": false,
+          "failure_codes": [
+            "speaker_lexical_coverage"
+          ],
+          "cases": 10,
+          "duration_ms": 7200640,
+          "local": {
+            "lexical_tokens": 31050,
+            "assigned_tokens": 30707,
+            "assigned_fraction": 0.9889533011272141,
+            "minimum_case_fraction": 0.9372278664731495,
+            "cases_below_minimum": 2,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 29930,
+            "assigned_tokens": 29930,
+            "assigned_fraction": 1,
+            "minimum_case_fraction": 1,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        },
+        "mixed": {
+          "sufficient": true,
+          "passed": true,
+          "failure_codes": [],
+          "cases": 10,
+          "duration_ms": 7225408,
+          "local": {
+            "lexical_tokens": 25628,
+            "assigned_tokens": 25628,
+            "assigned_fraction": 1,
+            "minimum_case_fraction": 1,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 24975,
+            "assigned_tokens": 24975,
+            "assigned_fraction": 1,
+            "minimum_case_fraction": 1,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        },
+        "overlap": {
+          "sufficient": false,
+          "passed": false,
+          "failure_codes": [
+            "insufficient_corpus",
+            "speaker_lexical_coverage"
+          ],
+          "cases": 9,
+          "duration_ms": 1620864,
+          "local": {
+            "lexical_tokens": 4687,
+            "assigned_tokens": 4553,
+            "assigned_fraction": 0.9714102837636015,
+            "minimum_case_fraction": 0.89419795221843,
+            "cases_below_minimum": 3,
+            "cases_without_lexical_tokens": 0
+          },
+          "miaoji": {
+            "lexical_tokens": 3904,
+            "assigned_tokens": 3904,
+            "assigned_fraction": 1,
+            "minimum_case_fraction": 1,
+            "cases_below_minimum": 0,
+            "cases_without_lexical_tokens": 0
+          }
+        }
+      }
+    }
+  }
+}

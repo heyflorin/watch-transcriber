@@ -30,6 +30,7 @@
   button { width:100%; min-height:48px; margin-top:22px; border:none; border-radius:12px;
            background:var(--accent); color:#10233a; font-size:15px; font-weight:600; }
   button:disabled { opacity:.55; }
+  button.secondary { margin-top:10px; background:transparent; color:var(--ink); border:1px solid var(--line); }
   .status { margin-top:14px; font-size:13px; color:var(--dim); text-align:center; min-height:20px; }
   .status.ok { color:var(--ok); }
   .status.err { color:var(--err); }
@@ -38,9 +39,9 @@
 <body>
 <div class="card">
   <h1>连接你的档案</h1>
-  <p class="sub">回音壁直接从你的私有备份拉取 —— 需要两份只读凭据,只存在本机安全存储(Keychain / Keystore)。<a href="https://github.com/xingfanxia/watch-transcriber#mobile" target="_blank">从 README 获取 token →</a></p>
+  <p class="sub">回音壁直接连接你的私有档案，不需要 Python、broker 或常驻 Mac。仅浏览可使用只读凭据；要在本机录音/导入并发布，需要把同一限定仓库和 bucket 的权限升级为读写。凭据只存在系统安全存储(Keychain / Keystore / Credential Manager)。<a href="https://github.com/xingfanxia/watch-transcriber#mobile" target="_blank">从 README 获取 token →</a></p>
 
-  <label>GitHub token(fine-grained PAT · 笔记仓库 contents:read)</label>
+  <label>GitHub token(fine-grained PAT · 浏览 read / 处理 read+write)</label>
   <input id="github_pat" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…">
   <div class="field-err" id="err-github"></div>
 
@@ -52,59 +53,83 @@
   <input id="r2_secret_access_key" type="password" autocomplete="off">
   <div class="field-err" id="err-r2"></div>
 
-  <details>
-    <summary>高级(默认即可)</summary>
+  <details open>
+    <summary>档案位置(必填)</summary>
     <label>笔记仓库</label>
-    <input id="repo" value="xingfanxia/watch-transcriber-data">
+    <input id="repo" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="owner/private-notes">
     <label>音频 bucket</label>
-    <input id="bucket" value="watch-transcriber-audio">
+    <input id="bucket" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="private-audio">
   </details>
 
-  <button id="go">连接并同步</button>
+  <button id="go">保存并同步</button>
+  <button id="offline" class="secondary" hidden>先创建本机档案（稍后配置云同步）</button>
   <div class="status" id="status"></div>
 </div>
 <script>
 const $ = id => document.getElementById(id);
+const DESKTOP_SETUP = new URLSearchParams(location.search).get("desktop") === "1";
 const status = (msg, cls) => { const s = $("status"); s.textContent = msg; s.className = "status " + (cls || ""); };
 const clearErrs = () => ["err-github", "err-r2"].forEach(id => { $(id).style.display = "none"; });
+const clearSecrets = () => ["github_pat", "r2_account_id", "r2_access_key_id", "r2_secret_access_key"]
+  .forEach(id => { $(id).value = ""; });
+
+if (DESKTOP_SETUP) $("offline").hidden = false;
+
+$("offline").onclick = async () => {
+  if (!window.__TAURI__?.core?.invoke) { status("安全配置通道不可用", "err"); return; }
+  $("offline").disabled = true;
+  status("正在创建本机档案…");
+  try {
+    await window.__TAURI__.core.invoke("initialize_local_archive");
+    status("✓ 本机档案已就绪", "ok");
+    setTimeout(() => location = "index.html", 350);
+  } catch (_) {
+    status("本机档案创建失败，请重试", "err");
+    $("offline").disabled = false;
+  }
+};
 
 $("go").onclick = async () => {
   clearErrs();
-  const body = {};
-  for (const k of ["github_pat", "r2_account_id", "r2_access_key_id", "r2_secret_access_key", "repo", "bucket"])
-    body[k] = $(k).value.trim();
-  if (!body.github_pat || !body.r2_access_key_id) { status("请先填好两份凭据", "err"); return; }
+  const setup = {
+    githubPat: $("github_pat").value.trim(),
+    r2AccountId: $("r2_account_id").value.trim(),
+    r2AccessKeyId: $("r2_access_key_id").value.trim(),
+    r2SecretAccessKey: $("r2_secret_access_key").value.trim(),
+    repo: $("repo").value.trim(),
+    bucket: $("bucket").value.trim(),
+  };
+  if (Object.values(setup).some(value => !value)) {
+    status("请填写全部凭据和档案位置", "err");
+    return;
+  }
+  if (!window.__TAURI__?.core?.invoke) { status("安全配置通道不可用", "err"); clearSecrets(); return; }
   $("go").disabled = true;
   status("验证凭据中…");
   try {
-    const r = await fetch("/api/sync/tokens", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
-    });
-    const j = await r.json();
-    if (!j.ok) {
-      const el = j.field === "github" ? $("err-github") : $("err-r2");
-      el.textContent = j.error || "验证失败";
-      el.style.display = "block";
-      status("请检查标红的凭据", "err");
-      $("go").disabled = false;
-      return;
-    }
+    await window.__TAURI__.core.invoke("save_sync_credentials", { setup });
   } catch (e) {
-    status("需要网络完成首次同步", "err");
+    const field = e && typeof e === "object" ? e.field : "";
+    const el = field === "github" ? $("err-github") : $("err-r2");
+    el.textContent = e && typeof e === "object" && e.error ? e.error : "验证失败";
+    el.style.display = "block";
+    status("请检查标红的凭据", "err");
+    clearSecrets();
     $("go").disabled = false;
     return;
   }
+  clearSecrets();
   status("✓ 已连接 · 正在同步档案…", "ok");
-  await fetch("/api/sync/refresh", { method: "POST" });
+  await fetch("api/sync/refresh", { method: "POST" });
   poll();
 };
 
 async function poll() {
   try {
-    const j = await (await fetch("/api/sync/status", { cache: "no-store" })).json();
-    if (j.state === "ok" && j.recordings > 0) {
+    const j = await (await fetch("api/sync/status", { cache: "no-store" })).json();
+    if (j.state === "ok") {
       status(`✓ 已连接 · ${j.recordings} 条录音`, "ok");
-      setTimeout(() => location = "/index.html?m=1", 600);
+      setTimeout(() => location = DESKTOP_SETUP ? "index.html" : "index.html?m=1", 600);
       return;
     }
     if (["error", "offline", "unauthorized"].includes(j.state)) {
@@ -118,8 +143,12 @@ async function poll() {
 }
 
 // Already-configured relaunch while archive still syncing: resume polling.
-fetch("/api/sync/status").then(r => r.json()).then(j => {
-  if (j.state === "syncing") { $("go").disabled = true; status("正在同步档案…"); poll(); }
+fetch("api/sync/status").then(r => r.json()).then(j => {
+  if (["idle", "syncing"].includes(j.state)) {
+    $("go").disabled = true;
+    status("正在同步档案…");
+    poll();
+  }
 }).catch(() => {});
 </script>
 </body>

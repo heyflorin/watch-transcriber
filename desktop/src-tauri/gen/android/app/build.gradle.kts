@@ -35,6 +35,12 @@ android {
         applicationId = "ai.ax.watch_transcriber"
         minSdk = 24
         targetSdk = 36
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // This class deliberately spans two separate instrumentation runs with
+        // a host-issued `am force-stop` between them. The ordinary connected
+        // suite cannot execute its phases in one process or arbitrary order.
+        testInstrumentationRunnerArguments["notClass"] =
+            "ai.ax.watch_transcriber.capture.RecordingProcessDeathHostTest"
         versionCode = tauriProperties.getProperty("tauri.android.versionCode", "1").toInt()
         versionName = tauriProperties.getProperty("tauri.android.versionName", "1.0")
     }
@@ -97,6 +103,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-process:2.10.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.4")
+    androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")
 }
 

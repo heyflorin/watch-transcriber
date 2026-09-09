@@ -2,14 +2,53 @@
 
 [中文版](README.zh.md)
 
-Apple Watch voice transcription pipeline (~¥2/hour of audio via 妙记). Record on your wrist, get structured notes automatically — then browse, play, and manage the whole archive in **EchoWall** (回音壁), the bundled desktop app.
+Cross-platform recording/import and Apple Watch voice transcription pipeline
+(~¥2/hour of audio via 妙记), with the archive managed in **EchoWall** (回音壁).
+
+> **Status:** the existing Mac Voice Memos watcher remains the proven default.
+> App-owned capture/import for macOS, iOS, and Android is the current release
+> target and remains in development until its physical-device matrix in
+> [`docs/capture/PLAN.md`](docs/capture/PLAN.md) passes. Windows 11 parity is the
+> following release; current Windows code and CI output are an unsupported
+> technical preview, not a shipped product.
 
 ```
 Apple Watch (Voice Memos) → iCloud Sync → Mac detects new .m4a
-  → 妙记 (Volcano Lark Minutes) STT — server-side diarization (Gemini/OpenAI fallback)
-    → Pluggable delivery (Apple Notes, Feishu, Obsidian, custom)
+  → upload to Volcano TOS → 妙记 API — server-side transcription + diarization
+    → Gemini title/summary → pluggable delivery (Apple Notes, Feishu, Obsidian, custom)
       → EchoWall desktop app (browse · play · tag speakers · manage)
+
+EchoWall Record / Import → durable in-app Rust queue → direct Volcano TOS upload
+  → 妙记 API → Gemini title/summary → in-app archive publisher
+
+Apple Silicon macOS (explicit optional install) → MOSS/Metal or Whisper/Metal
+  → local anonymous speakers → local Qwen3.8-27B summary
+    → verified local archive; optional cloud backup syncs later
 ```
+
+The new App path has no EchoWall processing server. Each user supplies their own
+provider/archive credentials through explicit setup; values are stored in the
+OS secure store and are never bundled with a release. The Python watcher remains
+only as the proven Voice Memos compatibility path during rollout.
+
+MOSS local processing is available on supported Apple Silicon Macs running
+macOS 14 or later with at least 32 GiB unified memory. Open **MOSS 本地**, then
+explicitly install its transcription, speaker and summary models. Imports offer
+**MOSS 本地处理**, **Whisper 离线处理** and **云端处理** as separate choices.
+You can save a default for future recordings; it survives App restarts and
+does not change existing jobs. Without a default, recordings wait locally.
+Unavailable local models or an unreadable preference never trigger an automatic
+download or cloud fallback. Existing Whisper preferences are not converted to
+MOSS; the App offers an explicit action to save an older page-local preference.
+
+The practical quality target is useful English, Mandarin and mixed-language
+meeting notes comparable to Feishu/Miaoji. Retained corpus and full local
+source-engine evidence support this target; isolated difficult tails can still
+fail with the original audio preserved for retry/export. These checks do not
+claim that every historical sample or final installed release has passed.
+See [current readiness and limitations](docs/capture/PLAN.md).
+Current local macOS/Android/iOS build paths, hashes and installation limits are
+in the [September 6 delivery notes](docs/capture/evidence/practical-closeout-2026-09-06.md).
 
 ## EchoWall — the desktop client
 
@@ -26,24 +65,35 @@ The pipeline's output isn't a pile of markdown you never open again — the repo
 - **Dark-mode archive UI** — AI titles, bilingual summaries, key points, and full diarized transcripts; search, topic + speaker filters, per-day rollups; tabbed detail pane (摘要/附注/转写, keys 1/2/3); click any transcript timestamp to seek the audio there. The page live-syncs when the pipeline delivers a new recording.
 - **Speaker tagging** — click a chip to name `SPEAKER_N`, batch-apply across the current filter, pick per-person colors; stacked facepile avatars on every row. Tags live in `manifest.json` (`speakers`), survive reprocessing, auto commit+push to the private notes repo, and are written back into the note files' transcript labels (`scripts/ops/apply_speakers.py`, reversible via `speakers_applied`).
 - **Markdown attachments** — paste or pick a `.md`/`.txt` per recording (an AI analysis of the conversation, meeting context, anything); stored under `data/<date>/<HHMMSS>-attachments/`, tracked in the manifest, rendered in-app. `scripts/ops/import_gpt_thread.py <export.json>` bulk-imports a ChatGPT export (all branches, three historical upload-filename formats): it attaches each recording's analysis and auto-extracts "who is SPEAKER_N" into tags (never overwriting manual ones). Idempotent.
-- **Safe delete** — a two-step 删除 button (or `scripts/ops/delete_recording.py`) removes the note, audio copy, attachments, manifest entry, by-topic links, and R2 backup object, and refreshes the daily rollup — then commits/pushes. Voice Memos originals and Apple Notes/飞书 copies are deliberately untouched; git history keeps notes recoverable.
-- **Local-first, yours** — a thin Rust shell: a loopback axum server serves `data/` (HTTP Range → audio seeking) and the webview loads the same generated `index.html` the pipeline builds — no second viewer implementation, no cloud, no account. The only places data goes are the private backups you configured. `WATCH_TRANSCRIBER_DATA` overrides the archive location.
-- **Fresh machine in minutes** — clone this repo and open the app: it shows a bootstrap page until `python3 scripts/ops/restore_archive.py` rebuilds `data/` (clones your private notes repo, pulls audio back from R2, seeds the upload ledger, rebuilds the viewer), then continues automatically.
+- **Safe delete** — a two-step 删除 button uses the native Rust archive CAS to remove the note, App-owned audio, attachments, manifest entry, and R2 object, then publishes a recording tombstone so stale work cannot resurrect it. Historical R2 objects without App ownership metadata require a second explicit partial-delete confirmation and are reported as retained. Voice Memos originals and Apple Notes/飞书 copies are deliberately untouched; `scripts/ops/delete_recording.py` remains an explicit maintenance CLI.
+- **Recoverable recording controls** — processing rows restore after relaunch and offer retry, cancel, Export Original, reprocess-from-transcript, and an explicitly confirmed local discard. Desktop recording stays alive when the window closes; the tray/menu bar shows source + timer with Pause/Continue and Stop, while Quit first closes and saves the active segment.
+- **Optional end-to-end offline processing on Apple Silicon** — explicitly install the MOSS local model pack, or retain the separate Whisper fallback. Both provide anonymous speakers, Qwen3.8-27B `UD-Q4_K_XL` bilingual summaries and a verified local archive; the App shows download size and hardware requirements before installation. Rust owns durable processing and recovery, while bounded one-shot workers handle the models. Local completion makes no TOS, 妙记, Gemini, GitHub or R2 request. Optional cloud backup is a separate, explicit action.
+- **Local-first, yours** — one Rust + Tauri app owns capture, import, durable processing, archive publication, and an authenticated in-process HTTP Range transport. Synced HTML/JavaScript is never executed. There is no EchoWall processing server, cloud account, or shared credential; data goes only to the private services you configure. `WATCH_TRANSCRIBER_DATA` overrides the Rust App archive location for source-checkout development; the legacy Python watcher uses `LOCAL_ARCHIVE_DIR`.
+- **Fresh machine in minutes** — a standalone install stores its archive under the platform app-data directory. First launch can create a fully local archive without credentials, or accept scoped GitHub/R2 credentials plus explicit private destinations through a write-only native command. Empty archives are valid and continue into the App instead of trapping setup. No Python restore command or repository checkout is required by the App.
 
 ```bash
 cd desktop
 npm install
-npm run tauri dev      # run against ../data
-npm run tauri build    # bundle a standalone EchoWall.app / .dmg
+npm run tauri:dev:macos    # run against ../data with local-model sidecars
+npm run tauri:build:macos  # local bundle; release signing uses CI credentials
 ```
 
 Or skip the build: download the latest `EchoWall_*_universal.dmg` (Apple Silicon + Intel) from [**GitHub Releases**](https://github.com/xingfanxia/watch-transcriber/releases). Releases are built by CI on every `v*` tag (`.github/workflows/release.yml`).
 
-> Release builds are **Developer ID signed and notarized by Apple** — download, open, done.
+> Release builds are **Developer ID signed and notarized by Apple**. CI verifies
+> the universal App, then independently notarizes and staples the final DMG
+> before upload.
 
 ## Mobile
 
-EchoWall also runs on **iOS and Android** (same Tauri shell, same generated viewer) as a **read-only companion**: it pulls your archive straight from your own backups — the private notes repo as a GitHub tarball, audio streamed on demand from your R2 bucket — so the phone needs no always-on server and nothing new to host. Editing (speakers, attachments, delete) stays on desktop.
+EchoWall also runs on **iOS and Android** with the same Tauri shell and generated
+viewer. Archive browsing/sync is the existing proven companion behavior.
+App-owned, explicitly started microphone recording and native file/share import
+are the new path: Android has a foreground-service recorder and SAF/share
+intake; iOS has a background AVFAudio recorder and a Voice Memos/Files share
+extension. Both still require their physical lifecycle and signed-release
+acceptance before they are described as shipped. Editing (speakers,
+attachments, delete) remains on desktop.
 
 | 时间流 list + sync pill | Detail: tabs, player, offline pin | First-run token setup | Manual light/dark |
 |---|---|---|---|
@@ -54,11 +104,19 @@ EchoWall also runs on **iOS and Android** (same Tauri shell, same generated view
 - **Direct-pull sync** — on launch (and on tap of the sync pill) the app downloads the notes repo tarball and overlays it into the app sandbox; the built viewer page ships inside that repo, so mobile always renders exactly what desktop built. Sync states: 同步中 / ✓ 已同步 / 同步失败 / 离线 / token 已过期.
 - **Audio: stream + cache + pin** — playback streams from R2 with HTTP Range (seek works), a 500MB LRU disk cache makes replays local, and the ↓ button on the player pins a recording's audio for offline. Offline: notes are always available, pinned audio plays, unpinned shows 离线未缓存.
 - **Tokens live in the platform secure store** — iOS Keychain / Android Keystore, never in a file, never in this repo.
+- **Recovery stays native** — iOS exports a verified non-empty document and
+  Android writes the user-selected SAF `content://` destination; both re-open
+  the result to verify size/hash and preserve the App copy on cancel/failure.
 
-**Token setup** (first run asks for two read-only credentials):
+**Token setup** (first run asks for two credentials and the explicit private
+repository/bucket destinations scoped to your own archive):
 
-1. **GitHub fine-grained PAT** — github.com → Settings → Developer settings → Fine-grained tokens: Repository access = only your private notes repo, Permissions = Contents: Read-only. Max expiry is 1 year — calendar the rotation.
-2. **R2 API token** — Cloudflare dashboard → R2 → Manage API Tokens → Create: Permission = Object Read only, scope = your audio bucket. The dashboard shows the **Access Key ID** and **Secret Access Key**; your **Account ID** is on the R2 overview page.
+1. **GitHub fine-grained PAT** — scope it to only your private notes repo. Archive browsing needs Contents: Read-only; App-owned recording/import publication needs Contents: Read and write. Max expiry is 1 year — calendar the rotation.
+2. **R2 API token** — scope it to only your audio bucket. Playback needs Object Read only; App-owned recording/import publication needs Object Read & Write. The dashboard shows the **Access Key ID** and **Secret Access Key**; your **Account ID** is on the R2 overview page.
+
+Public builds contain no shared credentials. Read-only tokens remain valid for
+viewer-only use; EchoWall must show processing as unconfigured until the
+installation has the required user-owned write scopes.
 
 **Install**: iOS via TestFlight (invite-based while the app record is pending) · Android via the signed `EchoWall_*_universal.apk` on [GitHub Releases](https://github.com/xingfanxia/watch-transcriber/releases) (sideload; built and signed by the same CI as the dmg).
 
@@ -69,7 +127,7 @@ cd desktop
 npm run tauri ios dev      # iOS simulator (boot it first)
 npm run tauri android dev  # Android emulator
 npm run tauri ios build -- --export-method app-store-connect   # App Store ipa
-npm run tauri android build -- --apk                           # signed APK (keystore.properties)
+npm run tauri android build -- --target aarch64 x86_64 --apk # signed 64-bit APK
 ```
 
 ## Why This Approach
@@ -95,22 +153,33 @@ Voice Memos in iOS 18+ has built-in transcription, but:
 - **No speaker diarization.** Single text block with no speaker labels.
 - **~80-90% accuracy** vs Gemini 3 Pro's 7.2% MER on mixed Chinese-English benchmarks.
 
-### Why Voice Memos + launchd?
+### Why keep Voice Memos + launchd?
 
-- **Voice Memos already solves all the hard problems.** Background recording, interruption recovery, unlimited duration, iCloud sync — all handled by Apple's own system-level entitlements that third-party apps can't access.
+- **It is the compatibility fallback, not the new processing architecture.**
+  Voice Memos already handles background recording, interruptions, long files,
+  and iCloud sync; the existing watcher stays available while app-owned capture
+  proves the same reliability.
 - **Action Button works.** You can map Voice Memos to the Ultra's Action Button for one-press recording.
 - **Recordings sync instantly.** Files appear at a known path on your Mac within seconds.
-- **launchd `WatchPaths`** is the native macOS way to react to filesystem changes — zero polling, zero battery waste, zero dependencies.
+- **launchd `WatchPaths`** remains the Mac-only detector for this legacy entry
+  path. iPhone apps cannot scan the private Voice Memos container; on iPhone,
+  use Share → EchoWall or record directly in EchoWall.
 
 ### STT: Why 妙记 (Volcano Lark Minutes)?
 
 **妙记 (`volc.lark.minutes`) is the default** (`STT_PROVIDER=lark`). It does speaker diarization **server-side in a single call** — no chunking, no cross-chunk speaker stitching. Verified across 5 real recordings (2026-06): 妙记 returned the exact speaker count on every two-person conversation (2/2/2/2), where chunk-stitched Gemini/OpenAI and the raw Doubao auc models all over-counted (3–5 speakers); it also swallowed a 3.45-hour file in one pass. Diarization, not transcription, was the real hard half — and 妙记 treats it as a first-class server-side job instead of a stitching afterthought.
 
-妙记 needs a publicly-fetchable FileURL, so the pipeline converts audio to a small 16kHz-mono mp3, uploads it to Volcano TOS, hands 妙记 a presigned URL, then deletes the object. Use a **Hong Kong** TOS region — it uploads far faster from outside mainland China (~700KB/s single-stream vs ~10–30KB/s to Shanghai) and 妙记 still fetches it fine. Requires `VOLC_API_KEY` + `VOLC_TOS_*` (see `.env.example`).
+The proven legacy watcher route is intentionally small:
 
-To reduce duration-based 妙记 usage, installing Senko enables conservative local compaction of non-speech gaps longer than 10 seconds in the temporary upload mp3 only. Every gap keeps at least 3 seconds on both sides, the original m4a is never modified, provider timestamps are mapped back to original recording time, and any Senko/ffmpeg/duration-validation failure falls back to uploading the complete recording. Set `LARK_TRIM_LONG_SILENCE=0` to disable it; see `.env.example` for the safety-floor settings.
+```text
+detect a new .m4a → upload a compact copy to Volcano TOS → call the 妙记 API
+```
 
-**Gemini 3.5 Flash** and **OpenAI gpt-4o-transcribe-diarize** remain as fallbacks (`STT_PROVIDER=gemini|openai`); they auto-chunk long audio and stitch speaker labels across chunks (details below). We originally benchmarked these for mixed Chinese-English audio:
+妙记 needs a publicly-fetchable FileURL. The legacy Python watcher converts the complete recording to a small 16kHz-mono MP3, puts it in TOS, hands 妙记 a presigned URL, and deletes the temporary object after the job. The new App path does not use Python or ffmpeg: Rust/Symphonia fully validates `.m4a`, `.mp3`, or `.wav`, uploads it under the matching extension/MIME, then runs the same 妙记 → Gemini text-summary route. Neither default path runs Senko, pyannote, local diarization, or chunk stitching (`LARK_TRIM_LONG_SILENCE=0` on the watcher).
+
+Use a **Hong Kong** TOS region — it uploads far faster from outside mainland China (~700KB/s single-stream vs ~10–30KB/s to Shanghai) and 妙记 still fetches it fine. Requires `VOLC_API_KEY` + `VOLC_TOS_*` (see `.env.example`).
+
+The repository still retains the older **Gemini 3.5 Flash** and **OpenAI gpt-4o-transcribe-diarize** fallback providers (`STT_PROVIDER=gemini|openai`). Their chunking and local diarization code is not part of the default 妙记 route. We originally benchmarked these for mixed Chinese-English audio:
 
 | Provider | Mixed zh+en MER | Price/hr | Diarization |
 |----------|----------------|----------|-------------|
@@ -124,7 +193,7 @@ To reduce duration-based 妙记 usage, installing Senko enables conservative loc
 
 Between the two fallbacks: on a 2-hour Chinese+English voice note tested side-by-side, Gemini won on punctuation, code-switching (`ROI` stayed `ROI` vs OpenAI's `RY`), and didn't hallucinate English filler from Chinese particles — so Gemini is the preferred fallback; OpenAI (`STT_PROVIDER=openai`) catches more granular interjections.
 
-### Long-audio handling (silence-aware chunking + parallel)
+### Long-audio handling (Gemini/OpenAI fallback only)
 
 Gemini 3 Flash in a single call **silently drops/summarizes** on audio longer than ~15 minutes — verified on a 2hr file where the single-call output ended at 1h22m and collapsed 71 minutes into a one-line "turn". This pipeline auto-chunks long audio at silence boundaries (`ffmpeg silencedetect`) and transcribes chunks **in parallel** (8 concurrent by default).
 
@@ -203,7 +272,7 @@ For doc deletes specifically, you'll also need the `drive:drive` scope, which re
 - For the default **妙记** provider: a Volcano Engine `VOLC_API_KEY` + TOS bucket creds (`VOLC_TOS_*`, Hong Kong region recommended) — see `.env.example`. `pip install tos`.
 - A [Gemini API key](https://aistudio.google.com/apikey) — always needed (the summary stage runs on Gemini; also the `gemini` fallback provider).
 - Python **3.12+** (Apple's system `python3` is 3.9 — too old; install with `brew install python@3.12` or asdf)
-- `ffmpeg` — required for audio conversion + silence-aware chunking. `brew install ffmpeg`
+- `ffmpeg` — required only by the legacy Python watcher and fallback providers; the standalone App path does not invoke it. `brew install ffmpeg`
 
 ### Install
 
@@ -343,7 +412,7 @@ watch-transcriber/
 │   ├── feishu_notify.py       # Feishu bot DM with link to created doc
 │   ├── obsidian_git.py        # GitHub commit to Obsidian vault
 │   └── agent.py               # claude -p delegation (Feishu, Slack, etc.)
-├── desktop/                   # EchoWall 回音壁 — Tauri shell (axum loopback server + manager APIs)
+├── desktop/                   # EchoWall 回音壁 — Tauri App (embedded Rust processing + authenticated media transport)
 ├── scripts/backfill/          # Idempotent backfills: audio copies / manifest+categories / R2 sync
 ├── scripts/ops/               # apply_speakers / delete_recording / import_gpt_thread / restore_archive
 ├── tests/                     # pytest suite (naming, deliveries, manifest, viewer, delete)

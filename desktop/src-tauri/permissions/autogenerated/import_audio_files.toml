@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-import-audio-files"
+description = "Enables the import_audio_files command without any pre-configured scope."
+commands.allow = ["import_audio_files"]
+
+[[permission]]
+identifier = "deny-import-audio-files"
+description = "Denies the import_audio_files command without any pre-configured scope."
+commands.deny = ["import_audio_files"]

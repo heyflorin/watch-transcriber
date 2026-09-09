@@ -1,0 +1,222 @@
+{
+  "schema_version": 1,
+  "pack_id": "speakerkit-v1",
+  "display_name": "SpeakerKit Pyannote v3 Diarization (Candidate)",
+  "quality_preset": "speakerkit-pyannote-v3-exclusive-v1",
+  "model_revision": "86ec9c929b52208b6656eb6a6361ed0d822a1f78",
+  "minimum_macos_major": 14,
+  "minimum_memory_bytes": 34359738368,
+  "sources": [
+    {
+      "id": "speakerkit-coreml",
+      "base_url": "https://huggingface.co/argmaxinc/speakerkit-coreml/resolve/86ec9c929b52208b6656eb6a6361ed0d822a1f78",
+      "license": "MIT + CC-BY-4.0 + Apache-2.0",
+      "attribution": "Argmax Core ML assets for Pyannote segmentation-3.0, WeSpeaker/VoxCeleb embeddings, and PLDA/VBx clustering"
+    }
+  ],
+  "files": [
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_clusterer/pyannote-v4/W32A32/PldaProjector.mlmodelc/analytics/coremldata.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_clusterer/pyannote-v4/W32A32/PldaProjector.mlmodelc/analytics/coremldata.bin",
+      "sha256": "3e13c8f4df77ea27cbbcdd6d083c63f5e7b3f32566cc5bf223fab92d40b81b8b",
+      "size_bytes": 243
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_clusterer/pyannote-v4/W32A32/PldaProjector.mlmodelc/coremldata.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_clusterer/pyannote-v4/W32A32/PldaProjector.mlmodelc/coremldata.bin",
+      "sha256": "6f6820ccf221d4cc7c107101d0ae4d716eb224e4fdffaf8f7ca36af70ae64c40",
+      "size_bytes": 327
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_clusterer/pyannote-v4/W32A32/PldaProjector.mlmodelc/metadata.json",
+      "install_path": "models/diarization/speakerkit-v1/speaker_clusterer/pyannote-v4/W32A32/PldaProjector.mlmodelc/metadata.json",
+      "sha256": "acc86b4a4f542d8e7eaf84fc290fe72bd8629b0ffcc16e5b1a9e13d777abd9d8",
+      "size_bytes": 1766
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_clusterer/pyannote-v4/W32A32/PldaProjector.mlmodelc/model.mil",
+      "install_path": "models/diarization/speakerkit-v1/speaker_clusterer/pyannote-v4/W32A32/PldaProjector.mlmodelc/model.mil",
+      "sha256": "209e641bf4d9c3868c9dc43ab8705094997917eb2df5f5d8c8fda09fed54b1d4",
+      "size_bytes": 8128
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_clusterer/pyannote-v4/W32A32/PldaProjector.mlmodelc/weights/weight.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_clusterer/pyannote-v4/W32A32/PldaProjector.mlmodelc/weights/weight.bin",
+      "sha256": "a1dbbb651a0a67fcfe5334672f459df090fa960917a6ee3a5423245a7ab92ced",
+      "size_bytes": 199040
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_clusterer/pyannote-v4/W32A32/README.txt",
+      "install_path": "models/diarization/speakerkit-v1/speaker_clusterer/pyannote-v4/W32A32/README.txt",
+      "sha256": "1714fe351f449b3e0d54f9b5be5219d4168fa2a56e1ab2cae509d5c38a7af915",
+      "size_bytes": 98
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_embedder/pyannote-v3/W8A16/README.txt",
+      "install_path": "models/diarization/speakerkit-v1/speaker_embedder/pyannote-v3/W8A16/README.txt",
+      "sha256": "c6ac9e9755ca881df5d0493e425a1841b398f7efdfa8c5a5175914587ee45310",
+      "size_bytes": 122
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedder.mlmodelc/analytics/coremldata.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedder.mlmodelc/analytics/coremldata.bin",
+      "sha256": "ba8405dfc9b9348ade705e052888b4bdc7fb8d079ef3ff71108a5f692d0209f2",
+      "size_bytes": 243
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedder.mlmodelc/coremldata.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedder.mlmodelc/coremldata.bin",
+      "sha256": "1597d6c037ac52436b5c2e1abc47e6c68483c19eeac75267dfb8795a78ec07c5",
+      "size_bytes": 370
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedder.mlmodelc/metadata.json",
+      "install_path": "models/diarization/speakerkit-v1/speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedder.mlmodelc/metadata.json",
+      "sha256": "29ea3421161c8344f6ea95db9b472217638a869f686f2494d10e5d11f11f4cda",
+      "size_bytes": 2367
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedder.mlmodelc/model.mil",
+      "install_path": "models/diarization/speakerkit-v1/speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedder.mlmodelc/model.mil",
+      "sha256": "5eee9f6aa380aef88fee604d75c5deaa23adc83c9480cb8f6dedc72803973e77",
+      "size_bytes": 451487
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedder.mlmodelc/weights/weight.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedder.mlmodelc/weights/weight.bin",
+      "sha256": "a02861969f47cf3a67e3b0d276e54b3c8bc3a6e43d40d77d1cccbd57da0e5795",
+      "size_bytes": 6661888
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedderPreprocessor.mlmodelc/analytics/coremldata.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedderPreprocessor.mlmodelc/analytics/coremldata.bin",
+      "sha256": "ce9bef9fb3125a5401300b5c5998c5d8f211094692cae780645d3e2757410f2c",
+      "size_bytes": 243
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedderPreprocessor.mlmodelc/coremldata.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedderPreprocessor.mlmodelc/coremldata.bin",
+      "sha256": "b4ebd0b9ce5a84768672663aff426eb19f9648d4b9f74286f0e19fc753ad76ba",
+      "size_bytes": 330
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedderPreprocessor.mlmodelc/metadata.json",
+      "install_path": "models/diarization/speakerkit-v1/speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedderPreprocessor.mlmodelc/metadata.json",
+      "sha256": "789f81c17dc04d469611d253684e534565fb4a008e54c722b925f1608bf87fce",
+      "size_bytes": 1979
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedderPreprocessor.mlmodelc/model.mil",
+      "install_path": "models/diarization/speakerkit-v1/speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedderPreprocessor.mlmodelc/model.mil",
+      "sha256": "42e552ebd7efb12ea813eceb474018dd0f46168e84ad3a1c54945bfc47be7a82",
+      "size_bytes": 14224
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedderPreprocessor.mlmodelc/weights/weight.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_embedder/pyannote-v3/W8A16/SpeakerEmbedderPreprocessor.mlmodelc/weights/weight.bin",
+      "sha256": "5f2c284bd22f1f7ab76901c1c6e57f82d4ebbf057fa0b924aad057f124f77a89",
+      "size_bytes": 2181696
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_segmenter/pyannote-v3/W32A32/README.txt",
+      "install_path": "models/diarization/speakerkit-v1/speaker_segmenter/pyannote-v3/W32A32/README.txt",
+      "sha256": "b84da4b3cdd7619435f45833d88cad15530a93fb99ef56ee6c4786d7f4664016",
+      "size_bytes": 105
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_segmenter/pyannote-v3/W32A32/SpeakerSegmenter.mlmodelc/analytics/coremldata.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_segmenter/pyannote-v3/W32A32/SpeakerSegmenter.mlmodelc/analytics/coremldata.bin",
+      "sha256": "42e2434809899abce6a3947f4f3b1365af7c8d3762e4c4bfc0df886f1dca8347",
+      "size_bytes": 243
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_segmenter/pyannote-v3/W32A32/SpeakerSegmenter.mlmodelc/coremldata.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_segmenter/pyannote-v3/W32A32/SpeakerSegmenter.mlmodelc/coremldata.bin",
+      "sha256": "ed53832ecc7af1c0eb6bc1bc8a475c369d6103ea08f21a40302a57f06966c6c8",
+      "size_bytes": 497
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_segmenter/pyannote-v3/W32A32/SpeakerSegmenter.mlmodelc/metadata.json",
+      "install_path": "models/diarization/speakerkit-v1/speaker_segmenter/pyannote-v3/W32A32/SpeakerSegmenter.mlmodelc/metadata.json",
+      "sha256": "3af014cc496b87a42cf315f041a554f38e0b56d910a2bf8a40e0f1ec535ab257",
+      "size_bytes": 3674
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_segmenter/pyannote-v3/W32A32/SpeakerSegmenter.mlmodelc/model.mil",
+      "install_path": "models/diarization/speakerkit-v1/speaker_segmenter/pyannote-v3/W32A32/SpeakerSegmenter.mlmodelc/model.mil",
+      "sha256": "25c39c5c59ffe1a5d244389aeaa8c195636b86239f8213496385d21c0efc2c56",
+      "size_bytes": 178974
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_segmenter/pyannote-v3/W32A32/SpeakerSegmenter.mlmodelc/weights/weight.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_segmenter/pyannote-v3/W32A32/SpeakerSegmenter.mlmodelc/weights/weight.bin",
+      "sha256": "1584619d1180ef89807b66c2c96605720365c02d4fbdcc9be02bbad91d188128",
+      "size_bytes": 5760346
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_segmenter/pyannote-v3/W8A16/README.txt",
+      "install_path": "models/diarization/speakerkit-v1/speaker_segmenter/pyannote-v3/W8A16/README.txt",
+      "sha256": "b84da4b3cdd7619435f45833d88cad15530a93fb99ef56ee6c4786d7f4664016",
+      "size_bytes": 105
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_segmenter/pyannote-v3/W8A16/SpeakerSegmenter.mlmodelc/analytics/coremldata.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_segmenter/pyannote-v3/W8A16/SpeakerSegmenter.mlmodelc/analytics/coremldata.bin",
+      "sha256": "40637aa0cb2a073bc303c7ca9ee79da35fa81d2cad1ead180e93b134005b95de",
+      "size_bytes": 243
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_segmenter/pyannote-v3/W8A16/SpeakerSegmenter.mlmodelc/coremldata.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_segmenter/pyannote-v3/W8A16/SpeakerSegmenter.mlmodelc/coremldata.bin",
+      "sha256": "6c356ed983b2a3332ce51299ca0f9747a35cb6c2a67b0ac24c69dbef3f989634",
+      "size_bytes": 497
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_segmenter/pyannote-v3/W8A16/SpeakerSegmenter.mlmodelc/metadata.json",
+      "install_path": "models/diarization/speakerkit-v1/speaker_segmenter/pyannote-v3/W8A16/SpeakerSegmenter.mlmodelc/metadata.json",
+      "sha256": "2fd6aaf6beb17b3758f5d0c5b2cf5feeacb0cc0c9267dbcd7536b247b1a5860e",
+      "size_bytes": 3757
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_segmenter/pyannote-v3/W8A16/SpeakerSegmenter.mlmodelc/model.mil",
+      "install_path": "models/diarization/speakerkit-v1/speaker_segmenter/pyannote-v3/W8A16/SpeakerSegmenter.mlmodelc/model.mil",
+      "sha256": "423c358915acab0d440c99f5162c17456936c2c02f7394b05ab226b9a34c122a",
+      "size_bytes": 193092
+    },
+    {
+      "source_id": "speakerkit-coreml",
+      "source_path": "speaker_segmenter/pyannote-v3/W8A16/SpeakerSegmenter.mlmodelc/weights/weight.bin",
+      "install_path": "models/diarization/speakerkit-v1/speaker_segmenter/pyannote-v3/W8A16/SpeakerSegmenter.mlmodelc/weights/weight.bin",
+      "sha256": "75ff1725ef4e58dacf9176466ec274a8a13a6132c296d6b571fb78ddad5455c4",
+      "size_bytes": 1520986
+    }
+  ]
+}

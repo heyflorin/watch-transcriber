@@ -1,0 +1,29 @@
+{
+  "build": {
+    "beforeBuildCommand": "./scripts/build_local_sidecars.sh",
+    "beforeDevCommand": "./scripts/build_local_sidecars.sh"
+  },
+  "bundle": {
+    "externalBin": [
+      "binaries/echowall-whisper-worker",
+      "binaries/echowall-diarization-worker",
+      "binaries/echowall-summary-worker",
+      "binaries/echowall-qwen-worker",
+      "binaries/echowall-moss-worker"
+    ],
+    "macOS": {
+      "hardenedRuntime": true
+    },
+    "resources": {
+      "../diarization-worker/FLUIDAUDIO-LICENSE": "licenses/FluidAudio-LICENSE",
+      "../diarization-worker/ThirdPartyLicenses/fastcluster-LICENSE.md": "licenses/fastcluster-LICENSE.md",
+      "../diarization-worker/ThirdPartyLicenses/vbx-LICENSE.md": "licenses/vbx-LICENSE.md",
+      "../summary-worker/ThirdPartyLicenses/llama.cpp-LICENSE": "licenses/llama.cpp-LICENSE",
+      "../summary-worker/ThirdPartyLicenses/llama-cpp-rs-LICENSE": "licenses/llama-cpp-rs-LICENSE",
+      "../qwen-worker/ThirdPartyLicenses/qwen-asr-LICENSE": "licenses/qwen-asr-LICENSE",
+      "../moss-worker/ThirdPartyLicenses/transcribe.cpp-LICENSE": "licenses/transcribe.cpp-LICENSE",
+      "../moss-worker/ThirdPartyLicenses/transcribe.cpp-THIRD-PARTY-LICENSES.md": "licenses/transcribe.cpp-THIRD-PARTY-LICENSES.md",
+      "native/macos/AudioCap-LICENSE": "licenses/AudioCap-LICENSE"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-list-processing-recordings"
+description = "Enables the list_processing_recordings command without any pre-configured scope."
+commands.allow = ["list_processing_recordings"]
+
+[[permission]]
+identifier = "deny-list-processing-recordings"
+description = "Denies the list_processing_recordings command without any pre-configured scope."
+commands.deny = ["list_processing_recordings"]

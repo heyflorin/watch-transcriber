@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-take-over-processing-with-qwen-candidate"
+description = "Enables the take_over_processing_with_qwen_candidate command without any pre-configured scope."
+commands.allow = ["take_over_processing_with_qwen_candidate"]
+
+[[permission]]
+identifier = "deny-take-over-processing-with-qwen-candidate"
+description = "Denies the take_over_processing_with_qwen_candidate command without any pre-configured scope."
+commands.deny = ["take_over_processing_with_qwen_candidate"]

@@ -55,8 +55,8 @@ def deliver(note: dict) -> bool:
     )
 
     if result.returncode != 0:
-        print(f"[delivery:feishu_notify] error: {result.stderr[:300]}")
+        print("[delivery:feishu_notify] send failed")
         return False
 
-    print(f"[delivery:feishu_notify] DM sent to {user_id}")
+    print("[delivery:feishu_notify] message sent")
     return True

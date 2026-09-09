@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""watch-transcriber: Voice Memos → Gemini STT → pluggable delivery.
+"""watch-transcriber: Voice Memos → Volcano TOS → 妙记 STT → deliveries.
 
 Monitors Apple Voice Memos recordings directory for new .m4a files,
-transcribes and summarizes them using Gemini 3.5 Flash in a single
-multimodal call, then delivers structured notes to configurable targets.
+uploads each recording to Volcano TOS for server-side transcription and
+diarization by 妙记, then uses Gemini to summarize the returned text before
+delivering structured notes to configurable targets.
 """
 
 import argparse
@@ -55,11 +56,8 @@ VOICE_MEMOS_DIR = Path.home() / "Library/Group Containers/group.com.apple.VoiceM
 STATE_DIR = SCRIPT_DIR / "state"
 STATE_FILE = STATE_DIR / "processed.json"
 
-# Gemini model. Default = gemini-3.5-flash (GA; bumped from gemini-3-flash-preview
-# 2026-06-16 for better transcription/speaker accuracy). Note: on >15min audio in a
-# single call, Gemini 3.x silently summarizes / drops segments — verified on a
-# 2hr file 2026-05-18 where single-call output ended at 1h22m and collapsed
-# 71min into one line. Chunking (below) is what makes it usable.
+# Gemini model for the summary stage and optional Gemini STT fallback. The
+# fallback chunks long recordings because Gemini can drop content in one call.
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
 
 # Skip recordings shorter than this (seconds). Voice Memos sometimes captures
@@ -75,7 +73,7 @@ MIN_DURATION_SECONDS = int(os.environ.get("MIN_DURATION_SECONDS", "60"))
 # speaker count on every 2-person conversation vs over-counting by the others).
 STT_PROVIDER = os.environ.get("STT_PROVIDER", "lark").lower()
 
-# Chunking thresholds (used by both providers).
+# Chunking thresholds used only by the Gemini/OpenAI fallback providers.
 # Gemini 3 Flash silently summarizes / drops segments on long single-call audio.
 # OpenAI gpt-4o-transcribe-diarize has 25MB / 1500s per-request limits.
 # Target chunk size sits comfortably under both, with silence-aware boundaries
@@ -1251,17 +1249,41 @@ def _clean_ai_title(raw) -> str:
     return t.strip()
 
 
-def format_note(audio_path: Path, result: dict) -> dict:
-    """Format Gemini result into a structured note."""
+def format_note(
+    audio_path: Path,
+    result: dict,
+    *,
+    captured_at: str | datetime | None = None,
+    source_label: str | None = None,
+    source_kind: str | None = None,
+    recording_id: str | None = None,
+    publish_generation: int | None = None,
+) -> dict:
+    """Format a summary and transcript into the existing structured note.
+
+    The keyword-only metadata is used by app-owned capture/import jobs. Leaving
+    it unset deliberately preserves the legacy Voice Memos watcher output.
+    """
     name = audio_path.stem
-    try:
-        date_part = name[:15]  # "YYYYMMDD HHMMSS"
-        dt = datetime.strptime(date_part, "%Y%m%d %H%M%S")
+    if captured_at is not None:
+        dt = (
+            captured_at
+            if isinstance(captured_at, datetime)
+            else datetime.fromisoformat(captured_at.replace("Z", "+00:00"))
+        )
         ts_label = dt.strftime("%Y-%m-%d %H:%M")
         timestamp = dt.isoformat()
-    except (ValueError, IndexError):
-        ts_label = name
-        timestamp = datetime.now().isoformat()
+    else:
+        try:
+            date_part = name[:15]  # "YYYYMMDD HHMMSS"
+            dt = datetime.strptime(date_part, "%Y%m%d %H%M%S")
+            ts_label = dt.strftime("%Y-%m-%d %H:%M")
+            timestamp = dt.isoformat()
+        except (ValueError, IndexError):
+            ts_label = name
+            timestamp = datetime.now().isoformat()
+
+    source = source_label or source_kind or "Apple Watch Voice Memo"
 
     # Timestamp-first title ("2026-07-20 01:40 标题") so name-sorted lists
     # (Feishu folder, Finder, Apple Notes) order chronologically; the AI part
@@ -1282,7 +1304,7 @@ def format_note(audio_path: Path, result: dict) -> dict:
         f"# {title}",
         "",
         f"**Recorded:** {timestamp}",
-        "**Source:** Apple Watch Voice Memo",
+        f"**Source:** {source}",
         f"**File:** `{audio_path.name}`",
         "",
     ]
@@ -1335,7 +1357,7 @@ def format_note(audio_path: Path, result: dict) -> dict:
     html_parts = [
         f"<h1>{_esc(title)}</h1>",
         f"<p><b>Recorded:</b> {_esc(timestamp)}<br>"
-        f"<b>Source:</b> Apple Watch Voice Memo<br>"
+        f"<b>Source:</b> {_esc(source)}<br>"
         f"<b>File:</b> {_esc(audio_path.name)}</p>",
     ]
     if summary_en or summary_zh:
@@ -1360,7 +1382,7 @@ def format_note(audio_path: Path, result: dict) -> dict:
         f'<div style="font-family:ui-monospace,Menlo,monospace;font-size:0.9em">{transcript_html}</div>'
     )
 
-    return {
+    note = {
         "title": title,
         "transcript": transcript.strip(),
         "summary": f"{summary_en}\n\n{summary_zh}".strip(),
@@ -1371,6 +1393,15 @@ def format_note(audio_path: Path, result: dict) -> dict:
         "markdown": "\n".join(lines),
         "html": "\n".join(html_parts),
     }
+    if source_label is not None or source_kind is not None:
+        note["source"] = source
+    if source_kind is not None:
+        note["source_kind"] = source_kind
+    if recording_id is not None:
+        note["recording_id"] = recording_id
+    if publish_generation is not None:
+        note["publish_generation"] = publish_generation
+    return note
 
 
 def process_recording(audio_path: Path, dry_run: bool = False) -> bool:
@@ -1399,7 +1430,7 @@ def process_recording(audio_path: Path, dry_run: bool = False) -> bool:
         print(f"  [DRY-RUN] would deliver to: {targets}")
         return False
 
-    # Single Gemini call for everything
+    # Two stages: provider STT (妙记 by default), then Gemini text summarization.
     result = transcribe_and_summarize(audio_path)
     if not result or not result.get("transcript"):
         print("Transcription returned empty result")
@@ -1555,7 +1586,7 @@ def _check_delivery(target: str, check) -> None:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="watch-transcriber — Apple Voice Memos → Gemini STT → pluggable delivery"
+        description="watch-transcriber — Voice Memos → TOS → 妙记 STT → deliveries"
     )
     parser.add_argument("--doctor", action="store_true",
                         help="Run setup checks and exit")
@@ -1564,7 +1595,7 @@ def main():
     parser.add_argument("--reprocess-all", action="store_true",
                         help="Reprocess ALL recordings in chronological order (ignores state)")
     parser.add_argument("--dry-run", action="store_true",
-                        help="Show what would be processed; skip Gemini and delivery")
+                        help="Show what would be processed; skip STT, summary, and delivery")
     args = parser.parse_args()
 
     if args.doctor:

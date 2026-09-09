@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-mobile-resume"
+description = "Enables the mobile_resume command without any pre-configured scope."
+commands.allow = ["mobile_resume"]
+
+[[permission]]
+identifier = "deny-mobile-resume"
+description = "Denies the mobile_resume command without any pre-configured scope."
+commands.deny = ["mobile_resume"]

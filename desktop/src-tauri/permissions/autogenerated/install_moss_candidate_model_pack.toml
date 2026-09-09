@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-install-moss-candidate-model-pack"
+description = "Enables the install_moss_candidate_model_pack command without any pre-configured scope."
+commands.allow = ["install_moss_candidate_model_pack"]
+
+[[permission]]
+identifier = "deny-install-moss-candidate-model-pack"
+description = "Denies the install_moss_candidate_model_pack command without any pre-configured scope."
+commands.deny = ["install_moss_candidate_model_pack"]
