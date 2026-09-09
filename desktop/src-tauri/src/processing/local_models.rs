@@ -2352,7 +2352,10 @@ mod tests {
         assert_eq!(catalog.minimum_macos_major, 14);
         assert_eq!(catalog.minimum_memory_bytes, 32 * 1024 * 1024 * 1024);
         #[cfg(target_os = "macos")]
-        assert!(system_memory_bytes().is_some_and(|bytes| bytes >= catalog.minimum_memory_bytes));
+        // Catalog validation also runs on CI hosts below the model's memory
+        // requirement. Detect physical memory without requiring installation
+        // or inference eligibility on the machine running this unit test.
+        assert!(system_memory_bytes().is_some_and(|bytes| bytes > 0));
     }
 
     #[test]

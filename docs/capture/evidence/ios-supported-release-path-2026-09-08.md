@@ -53,5 +53,54 @@ outside this TestFlight release.
 Physical-phone installation, launch, recording, locked-screen/background
 capture, and real Files/Voice Memos Share Sheet scenarios are deferred under
 the user's instruction. This release does not claim those tests are complete.
-New release artifact and TestFlight processing evidence will be appended after
-the corresponding actions succeed.
+## Fresh release artifact
+
+The fresh `npm run tauri ios build -- --archive-only --ci` archive completed,
+followed by `desktop/scripts/export_ios_archive.sh` to a new export directory.
+The build used an allowlisted environment and no credential-seeding variables.
+The previous September 6 release artifact remains retained.
+
+Artifact: `local-eval/release-20260908/ios-export/EchoWall.ipa`
+
+- Size: 9,102,861 bytes.
+- SHA-256: `0db3e00b3015841e54e64ec715fba005f1d36d179a37fe315b94839f89c37dd3`.
+- Main App and Share Extension: version 0.3.0, build 3, minimum iOS 14.0.
+- Both bundles: Apple Distribution signatures; strict signature verification
+  passed, including a recursive main-App check.
+- Both profiles: App Store distribution, valid through July 29, 2027,
+  `get-task-allow=false`, and the exact shared App Group entitlement.
+- SDK: iOS 26.5; Xcode 26.6 build 17F113; no scene manifest.
+- No packaged credential files or boundary-qualified GitHub/OpenAI-style
+  token/private-key patterns found in the unpacked App.
+
+Machine-readable local evidence is
+`local-eval/release-20260908/ios-artifact-verification.json`.
+Build, export, validation, and upload logs are retained under that same
+private local directory and are excluded from Git.
+
+Apple's official `altool --validate-app` returned `VERIFY SUCCEEDED` with no
+errors. Its only advisory says the minimum iOS version must become 15.0 for
+submissions starting in spring 2027. The current iOS 14.0 minimum is accepted
+for this release; the advisory is retained as a future toolchain migration
+requirement, not misreported as a current failure.
+
+## TestFlight result
+
+Apple's official `altool --upload-app` returned `UPLOAD SUCCEEDED` with no
+errors and the same future minimum-OS advisory on September 8 at 19:29 PDT.
+Subsequent authenticated readback from Apple's official API confirmed:
+
+- Marketing version 0.3.0, build 3.
+- Processing state `VALID`.
+- Internal testing state `IN_BETA_TESTING`.
+- Both pre-existing internal groups include the new build.
+
+Existing internal testers can now choose version 0.3.0 (3) in TestFlight.
+No new group, tester invitation, external beta review, App Store submission,
+or storefront metadata change was made. The temporary private-key lookup
+symlink was removed after upload; its vault source was unchanged.
+
+The exact API readback is retained locally at
+`local-eval/release-20260908/ios-asc-readback.json`; the artifact verification
+JSON also records the processing and internal availability result.
+Physical-phone acceptance remains deferred as stated above.
