@@ -40,6 +40,8 @@ does not change existing jobs. Without a default, recordings wait locally.
 Unavailable local models or an unreadable preference never trigger an automatic
 download or cloud fallback. Existing Whisper preferences are not converted to
 MOSS; the App offers an explicit action to save an older page-local preference.
+These settings apply only to recordings made in the App. The existing Apple
+Watch → Voice Memos → automatic transcription service keeps running independently.
 
 The practical quality target is useful English, Mandarin and mixed-language
 meeting notes comparable to Feishu/Miaoji. Retained corpus and full local
@@ -49,6 +51,8 @@ claim that every historical sample or final installed release has passed.
 See [current readiness and limitations](docs/capture/PLAN.md).
 Current local macOS/Android/iOS build paths, hashes and installation limits are
 in the [September 6 delivery notes](docs/capture/evidence/practical-closeout-2026-09-06.md).
+
+**0.3.0 preview is available:** [Mac and Android downloads](https://github.com/xingfanxia/watch-transcriber/releases/tag/v0.3.0). Existing internal iOS testers can select **0.3.0 (3)** in TestFlight. Physical phone testing remains pending.
 
 ## EchoWall — the desktop client
 
@@ -91,8 +95,8 @@ viewer. Archive browsing/sync is the existing proven companion behavior.
 App-owned, explicitly started microphone recording and native file/share import
 are the new path: Android has a foreground-service recorder and SAF/share
 intake; iOS has a background AVFAudio recorder and a Voice Memos/Files share
-extension. Both still require their physical lifecycle and signed-release
-acceptance before they are described as shipped. Editing (speakers,
+extension. They are distributed as preview features; physical phone lifecycle testing
+remains pending. Editing (speakers,
 attachments, delete) remains on desktop.
 
 | 时间流 list + sync pill | Detail: tabs, player, offline pin | First-run token setup | Manual light/dark |
@@ -101,7 +105,7 @@ attachments, delete) remains on desktop.
 
 *Screenshots show fabricated demo data.*
 
-- **Direct-pull sync** — on launch (and on tap of the sync pill) the app downloads the notes repo tarball and overlays it into the app sandbox; the built viewer page ships inside that repo, so mobile always renders exactly what desktop built. Sync states: 同步中 / ✓ 已同步 / 同步失败 / 离线 / token 已过期.
+- **Direct-pull sync** — on launch (and on tap of the sync pill) the app downloads the notes repo tarball and overlays it into the app sandbox; the App renders validated archive data using its own compiled viewer template, rather than executing synced HTML or JavaScript. Sync states: 同步中 / ✓ 已同步 / 同步失败 / 离线 / token 已过期.
 - **Audio: stream + cache + pin** — playback streams from R2 with HTTP Range (seek works), a 500MB LRU disk cache makes replays local, and the ↓ button on the player pins a recording's audio for offline. Offline: notes are always available, pinned audio plays, unpinned shows 离线未缓存.
 - **Tokens live in the platform secure store** — iOS Keychain / Android Keystore, never in a file, never in this repo.
 - **Recovery stays native** — iOS exports a verified non-empty document and

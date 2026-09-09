@@ -35,6 +35,7 @@ MOSS 本地处理支持运行 macOS 14 及以上、至少 32 GiB 统一内存的
 新录音的默认方式可单独保存，App 重启后仍有效，已有任务保持原选择。
 尚未选择默认方式时，录音留在本机等待操作；本地模型不可用或偏好读取失败时，
 不会自动下载或转为云端处理。旧 Whisper 偏好不会改成 MOSS，页面会提供明确的保存入口。
+这些设置只影响 App 内新录音；原来的 Watch 录音同步到 Mac 后自动转写、总结和归档的后台流程保持自动运行。
 
 当前实用质量标准是英文、中文和中英混合会议笔记达到与飞书/妙记相近的可用程度。
 已有语料与完全本地的源码引擎验证支持这一目标；少数困难尾段仍可能明确失败，
@@ -42,6 +43,8 @@ MOSS 本地处理支持运行 macOS 14 及以上、至少 32 GiB 统一内存的
 详见[当前就绪状态与限制](docs/capture/PLAN.md)。
 当前 macOS、Android 与 iOS 本地构建的路径、哈希和安装限制见
 [9 月 6 日交付说明](docs/capture/evidence/practical-closeout-2026-09-06.md)。
+
+**0.3.0 预览版已发布：**[下载 Mac 和 Android 安装包](https://github.com/xingfanxia/watch-transcriber/releases/tag/v0.3.0)。现有 iOS 内部测试人员可在 TestFlight 选择 **0.3.0（3）**。手机实际测试仍待完成。
 
 ## 回音壁 EchoWall —— 桌面客户端
 
@@ -81,7 +84,7 @@ npm run tauri:build:macos  # 本地打包；发行签名由 CI 凭据完成
 回音壁同样跑在 **iOS 和 Android** 上，仍复用同一个 Tauri 壳和同一份生成页面。
 已经验证的是档案浏览/同步。新增路径是用户主动开启的 App 内麦克风录音和原生文件/分享导入：
 Android 已有 foreground service 录音与 SAF/分享入口，iOS 已有后台 AVFAudio 录音和
-Voice Memos/Files Share Extension；两边都要通过真机生命周期与签名发布矩阵后，才会写成已上线。
+Voice Memos/Files Share Extension。当前已作为预览功能发布，手机上的真实使用与后台录音测试仍待完成。
 说话人、附注、删除等档案编辑仍留在桌面端。
 应用内的 loopback 只是带一次性 capability path 和同源写校验的媒体传输层，不承担 processing。viewer 模板和 markdown 运行时编译进 App，不会执行从档案仓库同步下来的 HTML/JavaScript。
 
@@ -103,7 +106,7 @@ Voice Memos/Files Share Extension；两边都要通过真机生命周期与签�
 
 公开构建不包含任何共享凭据。只读 token 仍可用于纯浏览；在当前安装没有用户自己的写权限前，回音壁必须把处理能力显示为未配置。
 
-**安装**:iOS 走 TestFlight(app record 建好前为邀请制)· Android 从 [GitHub Releases](https://github.com/xingfanxia/watch-transcriber/releases) 下载签名的 `EchoWall_*_universal.apk` 侧载(与 dmg 同一条 CI 构建签名)。
+**安装**:现有 iOS 内部测试人员可在 TestFlight 选择 0.3.0（3）· Android 从 [GitHub Releases](https://github.com/xingfanxia/watch-transcriber/releases) 下载签名的 `EchoWall_*_universal.apk` 侧载(与 dmg 同一条 CI 构建签名)。
 
 从源码构建(需要 Xcode / Android SDK+NDK):
 

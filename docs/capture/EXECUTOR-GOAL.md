@@ -1,10 +1,13 @@
 # Goal: Finish EchoWall Release 1 to practical Feishu-comparable usability
 
-Execution status: **executing non-phone release closeout**, per AX's
-2026-09-08 instruction “除了手机实际测试其他全部做完”. Commit/push, versioned
-release publication and TestFlight upload are now authorized. Physical phone
-tests remain explicitly deferred; do not treat them as this closeout's blocker.
-Preserve all earlier audio/privacy/no-lock restrictions.
+Execution status: **v0.3.0 engineering and distribution delivered**.
+AX's September8 instruction authorized commit/push, versioned release and
+TestFlight, excluding physical phone tests. Those release actions are complete:
+read `docs/capture/evidence/release-0.3.0-2026-09-08.md` first when resuming.
+The only remaining non-phone live acceptance work requires a proven silent Mac
+audio route or the pending temporary-mute authorization. No production change,
+model study or artifact rebuild is needed merely to resume. Keep the earlier
+no-audible-tone/no-lock restrictions and do not call that live check passed.
 
 ## Intent and acceptance
 
@@ -65,7 +68,7 @@ Read evidence progressively, only for the next concrete delivery question:
 - `docs/capture/evidence/speakerkit-tail-context-2026-09-06.json`
 - Relevant capture/provider/signing evidence linked by the plan's readiness table.
 
-## Closeout delivered on 2026-09-06 — resume from here
+## Historical local closeout on 2026-09-06 — superseded by the September8 release
 
 Read `docs/capture/evidence/practical-closeout-2026-09-06.md` for current artifact
 paths/hashes, setup, exact proof and held platform scope. The corresponding JSON

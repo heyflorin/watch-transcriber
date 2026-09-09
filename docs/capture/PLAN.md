@@ -1,9 +1,25 @@
 # CAPTURE-0: Recording and file ingestion release roadmap
 
-- Status: executing v0.3.0 code and distribution closeout; physical phone tests deferred by AX on 2026-09-08. Windows remains Release 2.
+- Status: v0.3.0 preview code and distribution delivered; physical phone tests deferred by AX. Remaining live Mac audio checks require a safe monitoring setup. Windows remains Release 2.
 - Owner: AX
 - Linear umbrella: [AX-237](https://linear.app/ax-agent-swarm/issue/AX-237)
 - Plan issue: [AX-238](https://linear.app/ax-agent-swarm/issue/AX-238)
+
+## Release delivered — 2026-09-08
+
+Code is committed/pushed, [v0.3.0 downloads are published](https://github.com/xingfanxia/watch-transcriber/releases/tag/v0.3.0),
+and iOS0.3.0(3) is available to existing internal TestFlight groups. Remote builds
+and the corrected full native test suite pass; see the
+[release evidence](evidence/release-0.3.0-2026-09-08.md). The original Watch
+recording automation is still loaded/configured and its actual-environment
+health check passes. App-only preferences do not change that automation.
+
+AX explicitly deferred physical phone tests. The earlier requirement to wait
+for tao0.37 is superseded by the [supported current iOS release decision](evidence/ios-supported-release-path-2026-09-08.md):
+Xcode26 is accepted now; scene migration belongs to a future SDK27 upgrade.
+The remaining live Mac system/source audio tests still need an independently
+safe non-monitored setup or the pending authorization to temporarily mute
+monitoring. They have not been run or quietly labelled passed.
 
 ## Acceptance and closeout — AX decision, 2026-09-06
 
@@ -1579,7 +1595,7 @@ Preserved decisions; revisit only for a demonstrated delivery blocker:
 | Windows baseline | Windows 11 for the full three-mode contract | a supported Windows 10 process-loopback path passes the same native-app isolation tests |
 | Android ABI | arm64-v8a devices + x86_64 emulator | a named supported 32-bit device and an upstream-compatible TOS/CRC path justify armv7/i686 |
 | Import timestamp | embedded recording date → filename parse → file mtime → user confirmation | a source family proves those metadata fields systematically misleading |
-| iOS scene lifecycle | no local plist workaround on tao 0.35.3; require stable Tauri adopting released tao 0.37's UIScene fixes plus simulator/physical cold launch | a stable Tauri release documents and ships a different supported migration path that passes the same launch matrix |
+| iOS scene lifecycle | Current Xcode26 legacy lifecycle is supported and Apple accepted0.3.0(3); no scene plist workaround on tao0.35.3 | Before SDK27 adoption, migrate through a supported Tauri/tao release and verify cold launch; current phone tests remain deferred |
 
 Revisit the architecture if any of these occur:
 

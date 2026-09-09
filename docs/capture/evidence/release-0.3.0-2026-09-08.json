@@ -1,0 +1,133 @@
+{
+  "version": "0.3.0",
+  "release": {
+    "id": 385243024,
+    "tag_name": "v0.3.0",
+    "html_url": "https://github.com/xingfanxia/watch-transcriber/releases/tag/v0.3.0",
+    "published_at": "2026-09-09T05:19:13Z",
+    "draft": false,
+    "prerelease": true,
+    "target_commitish": "cd109bd116dd07e75e0f66e65206e12d104ed690",
+    "assets": [
+      {
+        "name": "EchoWall_0.3.0_universal.apk",
+        "size": 44385790,
+        "digest": "sha256:cce048d7d1728b0d4b2ef62e2e53dc05e2d545dc22d50f17a9562186fe16ff61",
+        "browser_download_url": "https://github.com/xingfanxia/watch-transcriber/releases/download/v0.3.0/EchoWall_0.3.0_universal.apk"
+      },
+      {
+        "name": "EchoWall_0.3.0_universal.dmg",
+        "size": 24664034,
+        "digest": "sha256:104b49b91a22d6f741692308b3b33e0769961c69902172346e8b51c1a9a22960",
+        "browser_download_url": "https://github.com/xingfanxia/watch-transcriber/releases/download/v0.3.0/EchoWall_0.3.0_universal.dmg"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "size": 190,
+        "digest": "sha256:58b91d282dc9a7708f0cdf036e916053270cf0f5fb69c9df4d6e95c744b54545",
+        "browser_download_url": "https://github.com/xingfanxia/watch-transcriber/releases/download/v0.3.0/SHA256SUMS.txt"
+      }
+    ]
+  },
+  "anonymous_download_verification": {
+    "release_url": "https://github.com/xingfanxia/watch-transcriber/releases/tag/v0.3.0",
+    "anonymous_metadata_read": true,
+    "download_links": [
+      {
+        "name": "EchoWall_0.3.0_universal.apk",
+        "status": 200
+      },
+      {
+        "name": "EchoWall_0.3.0_universal.dmg",
+        "status": 200
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "status": 200
+      }
+    ],
+    "prerelease": true
+  },
+  "macos": {
+    "path": "local-eval/release-20260908/hosted-artifacts/macos/EchoWall_0.3.0_universal.dmg",
+    "sha256": "104b49b91a22d6f741692308b3b33e0769961c69902172346e8b51c1a9a22960",
+    "bytes": 24664034,
+    "version": "0.3.0",
+    "source_ci_run": 34312122844,
+    "privacy_gate": true,
+    "notarization": "stapled, Gatekeeper accepted",
+    "binaries": [
+      {
+        "name": "desktop",
+        "sha256": "a09638fc7315365bd36a7d6ec67d2c655b63a0ce417c1154910b3fc2f055dbf0"
+      },
+      {
+        "name": "echowall-diarization-worker",
+        "sha256": "55229106370cb099ecb96dbe53df731db3c0f4147639fc237c16e1eeba3f04cc"
+      },
+      {
+        "name": "echowall-moss-worker",
+        "sha256": "9488dfdbeb6ff13cd0830c7ca6688cfa2b625822d2cf57e1585f4af959de409f"
+      },
+      {
+        "name": "echowall-qwen-worker",
+        "sha256": "ed0502840cd27a694957228353e35da0a6c65d0637f1d6efe810678016b6ebcb"
+      },
+      {
+        "name": "echowall-summary-worker",
+        "sha256": "498b8a801d6e6523afedcd98d8c3c54b57c257aa290c2b820eeb69e4c395a76f"
+      },
+      {
+        "name": "echowall-whisper-worker",
+        "sha256": "a5d575892281e584dfb9c917ed1e672b38670a49f3f4637b2a7a47e393c9bbbd"
+      }
+    ]
+  },
+  "android": {
+    "path": "local-eval/release-20260908/hosted-artifacts/android/EchoWall_0.3.0_universal.apk",
+    "sha256": "cce048d7d1728b0d4b2ef62e2e53dc05e2d545dc22d50f17a9562186fe16ff61",
+    "bytes": 44385790,
+    "version": "0.3.0",
+    "version_code": 3000,
+    "abis": [
+      "arm64-v8a",
+      "x86_64"
+    ],
+    "signature_verified": true,
+    "signer_matches_previous": true,
+    "source_ci_run": 34311235827,
+    "debuggable": false
+  },
+  "ios": {
+    "version": "0.3.0",
+    "build": "3",
+    "processing": "VALID",
+    "internal_testing": "IN_BETA_TESTING",
+    "existing_internal_groups_verified": 2,
+    "sha256": "0db3e00b3015841e54e64ec715fba005f1d36d179a37fe315b94839f89c37dd3"
+  },
+  "hosted_evidence": {
+    "macos_run": 34312122844,
+    "other_platforms_run": 34311235827,
+    "macos_run_conclusion": "success",
+    "other_platform_product_lanes": "success",
+    "superseded_failures": [
+      "CI host memory assumption",
+      "unpinned newer compiler style lints",
+      "second Swift test runner entered imported executable"
+    ],
+    "redundant_published_tag_run_canceled": 34314400256
+  },
+  "watcher": {
+    "service_loaded": true,
+    "original_trigger_and_paths_preserved": true,
+    "last_observed_exit": 0,
+    "doctor_passed": 21,
+    "doctor_warnings": 0,
+    "personal_audio_test_performed": false
+  },
+  "deferred_phone_tests": true,
+  "mac_live_audio_permission_pending": true,
+  "installed_mac_version": "0.3.0",
+  "production_app_launched": false
+}
