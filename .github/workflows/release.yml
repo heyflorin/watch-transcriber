@@ -40,6 +40,9 @@ jobs:
           node-version: 22
 
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.96.0"
+          components: rustfmt,clippy
 
       - uses: swatinem/rust-cache@v2
         with:
@@ -73,11 +76,25 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: "1.96.0"
+          components: rustfmt,clippy
           targets: aarch64-apple-darwin,x86_64-apple-darwin
 
       - uses: swatinem/rust-cache@v2
         with:
-          workspaces: desktop/src-tauri
+          cache-on-failure: true
+          workspaces: |
+            desktop/src-tauri
+            desktop/local-whisper-protocol
+            desktop/local-summary-protocol
+            desktop/local-qwen-protocol
+            desktop/local-moss-protocol
+            desktop/local-audio
+            desktop/whisper-worker
+            desktop/qwen-worker
+            desktop/summary-worker
+            desktop/moss-worker
+            desktop/local-quality-eval
 
       - name: Install frontend dependencies
         working-directory: desktop
@@ -188,6 +205,8 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: "1.96.0"
+          components: rustfmt,clippy
           targets: aarch64-apple-ios
 
       - uses: swatinem/rust-cache@v2
@@ -274,6 +293,8 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: "1.96.0"
+          components: rustfmt,clippy
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
       - uses: swatinem/rust-cache@v2

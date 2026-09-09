@@ -67,6 +67,13 @@ npm run tauri:dev:macos      # run against ../data with local-model sidecars
 npm run tauri:build:macos    # local bundle; release signing uses CI credentials
 ```
 
+`rust-toolchain.toml` pins desktop and worker builds to Rust 1.96.0, the
+compiler used to verify the shipping artifacts. All four release CI lanes use
+the same version, including Clippy and rustfmt. Run Cargo commands from
+`desktop/` or a crate directory so rustup selects this toolchain. Upgrade the
+pin and CI together, then rerun the release checks; a moving stable compiler
+must not silently change the release lint or build requirements.
+
 The macOS build command is the canonical privacy-preserving wrapper: it remaps
 Rust and native C/C++ builder paths, strips release symbols, and builds explicit
 arm64+x86_64 universal workers when requested. Release CI runs

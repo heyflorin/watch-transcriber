@@ -1,0 +1,5 @@
+# Keep local builds and release CI on the compiler used to verify shipping artifacts.
+[toolchain]
+channel = "1.96.0"
+profile = "minimal"
+components = ["rustfmt", "clippy"]
