@@ -16,6 +16,14 @@ on:
     tags: ["v*"]
   workflow_dispatch:
     inputs:
+      target:
+        description: Platforms to verify (tags and TestFlight uploads always run all)
+        type: choice
+        required: false
+        default: all
+        options:
+          - all
+          - macos
       upload_testflight:
         description: Upload the verified iOS build to TestFlight (default is build only)
         type: boolean
@@ -31,6 +39,7 @@ concurrency:
 
 jobs:
   windows:
+    if: github.event_name == 'push' || inputs.target != 'macos' || inputs.upload_testflight
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
@@ -143,7 +152,7 @@ jobs:
           cargo clippy --locked --all-targets --manifest-path moss-worker/Cargo.toml -- -D warnings
           cargo test --locked --all-targets --manifest-path local-quality-eval/Cargo.toml
           cargo clippy --locked --all-targets --manifest-path local-quality-eval/Cargo.toml -- -D warnings
-          swift test --package-path diarization-worker --configuration release
+          swift test --package-path diarization-worker --configuration release --disable-swift-testing
 
       - name: Write notary API key
         env:
@@ -195,6 +204,7 @@ jobs:
           if-no-files-found: error
 
   ios:
+    if: github.event_name == 'push' || inputs.target != 'macos' || inputs.upload_testflight
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
@@ -273,6 +283,7 @@ jobs:
           if-no-files-found: error
 
   android:
+    if: github.event_name == 'push' || inputs.target != 'macos' || inputs.upload_testflight
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

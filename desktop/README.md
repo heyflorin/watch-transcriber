@@ -130,3 +130,11 @@ walks up from its executable to find an enclosing source checkout's `data/`.
 A standalone install with no checkout uses its platform app-data directory and
 the in-App GitHub/R2 setup + Rust sync path; it does not require a Python
 restore command.
+
+### Native speaker worker tests
+
+Run `swift test --package-path diarization-worker --configuration release --disable-swift-testing`
+from `desktop/`. All native tests use XCTest, including private PCM cleanup.
+The separate Swift Testing runner is disabled because the preset tests import
+an executable target: launching that second runner enters the worker command
+parser. This selects the correct test runner without skipping the tests.
