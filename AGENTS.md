@@ -1,4 +1,13 @@
-# watch-transcriber — agent notes
+# watch-transcriber — agent guide
+
+## Project scale and verification
+
+**Profile: personal recorder with valuable private data.** EchoWall records/imports and transcribes private audio across devices. UI changes stay lightweight. Capture permissions, credential storage, durable queues, archive writes and deletion need focused failure/recovery checks. Preserve the physical-device release matrix for capture releases; never run all providers/devices for unrelated edits.
+
+- The requested behavior/questions define completion. Reviews are read-only unless fixes are requested; report unrelated findings briefly without adding tasks or test backfill.
+- Use the smallest existing check that proves the change. Add tests for a concrete regression or consequential boundary; do not impose blanket TDD, new coverage targets, full suites, plans or reviewers. Preserve configured CI and actual release gates; reuse still-valid results.
+- Keep the existing structure. Internal contract errors should be clear; add retries, fallbacks or compatibility layers only for an observed external failure or supported contract. Keep secrets private and inspect security only at boundaries changed by this task.
+- This section owns task scope and local verification effort; historical goals and broad test lists below do not automatically activate a workflow.
 
 Voice Memos → 妙记 STT → pluggable deliveries → local archive + 回音壁 EchoWall
 desktop app. Feature docs live in `README.md` / `README.zh.md` (bilingual —

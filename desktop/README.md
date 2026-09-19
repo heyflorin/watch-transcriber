@@ -59,7 +59,7 @@ Keychain/Keystore/Credential Manager, and the viewer runs in sync mode via the
 `/index.html?m=1` landing URL. Recording/import entrypoints are added only as
 their native adapters become real; mobile never claims system/call capture.
 Token setup guide + install paths:
-repo README `## Mobile`. Agent landmines: repo `CLAUDE.md` `## Mobile`.
+repo README `## Mobile`. Agent landmines: repo `AGENTS.md` `## Mobile`.
 
 ```bash
 npm install
