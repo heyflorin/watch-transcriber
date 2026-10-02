@@ -254,6 +254,17 @@ _META_LINE_RE = re.compile(
 )
 
 
+def _drop_meta_lines(transcript: str) -> str:
+    """Drop Gemini preamble / meta-commentary lines (e.g. "以下是为您转录的音频文本：").
+
+    Speaker-turn lines are always kept, even if they happen to match
+    _META_LINE_RE (e.g. "... SPEAKER_0: I work as an AI engineer").
+    """
+    kept = [ln for ln in transcript.splitlines()
+            if _TURN_RE.match(ln) or not _META_LINE_RE.match(ln)]
+    return "\n".join(kept).strip()
+
+
 def _offset_timestamps(transcript: str, offset_sec: float) -> str:
     """Shift every `[HH:MM:SS - HH:MM:SS]` timestamp by offset_sec."""
 
@@ -843,7 +854,9 @@ def _gemini_transcribe(client, audio_path: Path) -> str:
     try:
         if len(chunks) == 1:
             print(f"  Transcribing with {GEMINI_MODEL} (single chunk, {duration:.0f}s)...")
-            text = _gemini_transcribe_one(client, chunks[0][0])
+            # Multi-chunk output is cleaned in _offset_and_filter_timestamps;
+            # single-chunk output needs the same preamble filtering.
+            text = _drop_meta_lines(_gemini_transcribe_one(client, chunks[0][0]))
         else:
             n = len(chunks)
             workers = min(CHUNK_PARALLELISM, n)
